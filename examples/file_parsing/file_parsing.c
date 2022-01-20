@@ -17,7 +17,12 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
 IN THE SOFTWARE.
 */
-#ifndef JSON_C_SERIALIZER
-#define JSON_C_SERIALIZER
+// Example JSON file taken from: https://docs.fileformat.com/web/json/
+#include <stdio.h>
 
-#endif
+int main()
+{
+    printf("Hello world!");
+    getchar();
+    return 0;
+}

@@ -17,7 +17,18 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
 IN THE SOFTWARE.
 */
-#ifndef JSON-C_PARSER
-#define JSON-C_PARSER
+
+/*
+JSON file format:
+- written in "key":value pairs
+- values can have the following types:
+    - number
+    - string
+    - array -- list of values (eg. ["Apple", "Pear", "Peach"...] )
+    - object -- collection of key/value pairs (eg. { "name":"Jack", "age":5, ...} )
+- Objects can be nested together to represent the structure of data
+*/
+#ifndef JSON_C_PARSER
+#define JSON_C_PARSER
 
 #endif

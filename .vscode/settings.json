@@ -1,0 +1,6 @@
+{
+    "cmake.configureSettings":
+    {
+        "JSON-C_BUILD_EXAMPLES":true
+    }
+}

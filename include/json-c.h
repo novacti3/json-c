@@ -17,11 +17,11 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
 IN THE SOFTWARE.
 */
-#ifndef JSON-C
-#define JSON-C
+#ifndef JSON_C
+#define JSON_C
 
 #include "src/parser/json-c_parser.h"
-#if JSON-C_SERIALIZATION_COMPILED
+#if JSON_C_SERIALIZATION_COMPILED
     #include "src/serializer/json-c_serializer.h"
     #include "src/serializer/json-c_deserializer.h"
 #endif
