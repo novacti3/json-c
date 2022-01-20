@@ -1,0 +1,4 @@
+#ifndef JSON-C_DESERIALIZER
+#define JSON-C_DESERIALIZER
+
+#endif
