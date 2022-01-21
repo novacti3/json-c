@@ -24,11 +24,27 @@ JSON file format:
 - values can have the following types:
     - number
     - string
+    - bool
     - array -- list of values (eg. ["Apple", "Pear", "Peach"...] )
     - object -- collection of key/value pairs (eg. { "name":"Jack", "age":5, ...} )
 - Objects can be nested together to represent the structure of data
 */
 #ifndef JSON_C_PARSER
 #define JSON_C_PARSER
+
+#include "json-c_types.h"
+
+// Parser object that reads a JSON file at the provided filepath holds the extracted data
+typedef struct JSONParser
+{
+    char *filePath;
+    JSONPair *pairs;
+} JSONParser;
+
+// Parses the provided file and stores all of the key/value pairs contained within
+// Returns 1 if parsing was successful, 0 if parsing failed and -1 if file couldn't be found
+int jsonParseFile(JSONParser *parser, const char *path);
+// Clears the JSONParser of all data and prepares it for re-use by jsonParseFile()
+void jsonClearParser(JSONParser *parser);
 
 #endif

@@ -19,10 +19,27 @@ IN THE SOFTWARE.
 */
 // Example JSON file taken from: https://docs.fileformat.com/web/json/
 #include <stdio.h>
+#include "json-c.h"
 
 int main()
 {
-    printf("Hello world!");
-    getchar();
+    JSONParser parser;
+
+    int parseResult = jsonParseFile(&parser, "example.json");
+    switch(parseResult)
+    {
+        case -1:
+            printf("File couldn't be found\n");
+        break;
+
+        case 0:
+            printf("Parsing failed\n");
+        break;
+
+        case 1:
+            printf("Parsing successful\n");
+        break;
+    }
+    
     return 0;
 }
