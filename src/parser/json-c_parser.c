@@ -4,16 +4,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-static char *getLine(int *length, FILE *stream)
+static int jsonFileGetLine(char **out, int *length, FILE *stream)
 {
+    free(out);
+
     // The ptr to the start of the line in the stream
-    char *startPtr = NULL;
+    int startCharIndex = -1;
     // The ptr to the end of the line in the stream
-    char *endPtr = NULL;
+    int endCharIndex = -1;
 
     // Used to set the start pointer because when the stream is first passed in,
-    // FILE->_ptr is set to NULL. Using fgetc sets the ptr to the appropriate place,
-    // so setting startPtr is worth it only after fgetc is called for the first time.
+    // the file ptr is set to NULL. Using fgetc sets the ptr to the appropriate place,
+    // so setting startCharIndex is worth it only after fgetc is called for the first time.
     int firstIter = 1;
     while(feof(stream) == 0)
     {
@@ -21,51 +23,40 @@ static char *getLine(int *length, FILE *stream)
      
         if(firstIter)
         {
-            // Function fgetc sets the file ptr to after the current character.
-            // Seeing as we will need the entire line, we must compensate
-            // by shifting the pointer one character back 
-            // so we get the first character of the line as well. 
-            startPtr = stream->_ptr - sizeof(char);
+            startCharIndex = ftell(stream) - 1;
             firstIter = 0;
         }
 
         if(c == '\n')
         {
-            // Same as startPtr, just with the last character of the line
-            endPtr = stream->_ptr - sizeof(char);
+            // Omit the \n at the end of the line because it's
+            // redundant in the output string
+            endCharIndex = ftell(stream) - 1;
             break;
         }
         else if(c == EOF)
         {
-            return NULL;
+            return 0;
         }
     }
 
-    // Because we use pointers starting from the same memory address,
-    // the length of the line is just the difference between the addresses
-    // of the end and start pointers
-    int lineLength = endPtr - startPtr;
-    // Allocate enough space for all of the characters on the line + null-terminating character
-    char *line = (char*)malloc((size_t)(lineLength + 1));
+    int lineLength = endCharIndex - startCharIndex;
+    // Allocate enough space for all of the characters on the line
+    *out = (char*)malloc((size_t)(lineLength));
     
     // Shift the file pointer to the start of the line so that we can use
     // the fgets function and read lineLength characters to get the line string    
-    int bytesToStartOfLine = (startPtr - stream->_base) * sizeof(char);
-    fseek(stream, bytesToStartOfLine, SEEK_SET);
-    fgets(line, lineLength + 1, stream);
+    if(fseek(stream, startCharIndex, SEEK_SET) != 0)
+        return 0;
+    // fgets appends a null-terminating character to the string automatically
+    // so adding it manually is not necessarry
+    // lineLength + 1 is required because fgets goes up to n-1st character in the stream,
+    // therefore doing just lineLength would omit 1 character
+    if(fgets(*out, lineLength + 1, stream) == NULL)
+        return 0;
     
-    // Make sure to add a null-terminating character to the end of the line
-    // so that it's a complete string
-    line[lineLength + 1] = '\0';
-    
-    // Put the file ptr to the end of the line so that a new line can be read etc.
-    // int bytesToEndOfLine = -bytesToStartOfLine;
-    // fseek(stream, -bytesToEndOfLine, SEEK_CUR);
-    // int bytesToEndOfLine = (endPtr - stream->_ptr) * sizeof(char);
-    int result = fseek(stream, sizeof(char), SEEK_CUR);
-
     *length = lineLength;
-    return line;
+    return 1;
 }
 
 int jsonParseFile(JSONParser *parser, const char *path)
@@ -100,7 +91,7 @@ int jsonParseFile(JSONParser *parser, const char *path)
     
     char *line = NULL;
     int lineLength = 0;
-    while((line = getLine(&lineLength, file)) != NULL)
+    while(jsonFileGetLine(&line, &lineLength, file) != 0)
     {
         int keyStartQuoteIndex = -1;
         int keyEndQuoteIndex = -1;
@@ -108,43 +99,46 @@ int jsonParseFile(JSONParser *parser, const char *path)
 
         for (size_t i = 0; i < lineLength; i++)
         {
-            switch(line[i])
-            {
-                case '"':
-                {
-                    keyStartQuoteIndex = keyStartQuoteIndex == -1 ? i : -1;
-                    keyEndQuoteIndex = (keyEndQuoteIndex == -1) && (keyStartQuoteIndex != -1) ? i : -1; 
-                }
-                break;
+            // WIP
+            // switch(line[i])
+            // {
+            //     case '"':
+            //     {
+            //         // FIXME: Causes segfault because the indexes get overwritten to -1,
+            //         // probably due to a wonky condition
+            //         keyStartQuoteIndex = keyStartQuoteIndex == -1 ? i : -1;
+            //         keyEndQuoteIndex = (keyEndQuoteIndex == -1) && (keyStartQuoteIndex != -1) ? i : -1; 
+            //     }
+            //     break;
             
-                case ':':
-                {
-                    size_t keySize = (keyEndQuoteIndex - 1) - (keyStartQuoteIndex + 1);
-                    key = (char*)malloc(keySize);
-                    strncpy(key, &line[keyStartQuoteIndex], keySize);
-                }
-                break;
+            //     case ':':
+            //     {
+            //         size_t keySize = (keyEndQuoteIndex - 1) - (keyStartQuoteIndex + 1);
+            //         key = (char*)malloc(keySize);
+            //         strncpy(key, &line[keyStartQuoteIndex], keySize);
+            //     }
+            //     break;
 
-                case '{':
-                {
-                    if(line[i] == 0)
-                        continue;
-                }
-                break;
-                case '}':
-                {
-                    if(line[i] == lineLength)
-                        continue;
-                }
-                break;
-            }
+            //     case '{':
+            //     {
+            //         if(line[i] == 0)
+            //             continue;
+            //     }
+            //     break;
+            //     case '}':
+            //     {
+            //         if(line[i] == lineLength)
+            //             continue;
+            //     }
+            //     break;
+            // }
         }
     }
 
     // char *line = NULL;
     // ssize_t lineLength = 0; 
     
-    // while((lineLength = getline(&line, NULL, file)) != -1)
+    // while((lineLength = jsonFileGetLine(&line, NULL, file)) != -1)
     // {
     //     int keyStartQuoteIndex = -1;
     //     int keyEndQuoteIndex = -1;

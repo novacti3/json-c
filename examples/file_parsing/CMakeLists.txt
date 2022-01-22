@@ -1,3 +1,5 @@
+# FIXME: Make the example build into a new directory in the directory along with the source code
+# so that the example.json file doesn't have to be copied to who knows where
 cmake_minimum_required(VERSION 3.20)
 
 project(JSON-C_FILE_PARSING_EXAMPLE DESCRIPTION "Example of file parsing for the JSON-C library" LANGUAGES C)
