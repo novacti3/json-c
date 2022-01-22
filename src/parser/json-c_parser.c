@@ -20,28 +20,40 @@ static int jsonFileGetLine(char **out, int *length, FILE *stream)
     while(feof(stream) == 0)
     {
         char c = fgetc(stream);
-     
+
+        // Don't run the loop if end-of-file was reached because there's no point to work with the character further
+        if(c == EOF)
+            continue;
+
         if(firstIter)
         {
             startCharIndex = ftell(stream) - 1;
             firstIter = 0;
         }
 
-        if(c == '\n')
+        // Move the start of the line past whitespaces and tabs
+        // Not using a switch statement here because we need to be
+        // able to break out of the loop, whereas break in a switch statement
+        // only ends the case
+        // NOTE: A potential issue might arise if a whitespace finds itself
+        // eg. right before the newline char. Needs testing
+        if (c == ' ' || c == '\t')
+            startCharIndex++;
+        else if (c =='\n')
         {
-            // Omit the \n at the end of the line because it's
-            // redundant in the output string
-            endCharIndex = ftell(stream) - 1;
+            endCharIndex = ftell(stream);
             break;
-        }
-        else if(c == EOF)
-        {
-            return 0;
         }
     }
 
+    // No line needs to be saved because end-of-file was reached 
+    if(endCharIndex == -1)
+        return 0;
+
     int lineLength = endCharIndex - startCharIndex;
     // Allocate enough space for all of the characters on the line
+    // Because fgets gets a string up to n-1 characters, the last character is reserved
+    // for the null-terminating char, so allocating lineLength + 1 to set aside space for it is not needed
     *out = (char*)malloc((size_t)(lineLength));
     
     // Shift the file pointer to the start of the line so that we can use
@@ -50,9 +62,7 @@ static int jsonFileGetLine(char **out, int *length, FILE *stream)
         return 0;
     // fgets appends a null-terminating character to the string automatically
     // so adding it manually is not necessarry
-    // lineLength + 1 is required because fgets goes up to n-1st character in the stream,
-    // therefore doing just lineLength would omit 1 character
-    if(fgets(*out, lineLength + 1, stream) == NULL)
+    if(fgets(*out, lineLength, stream) == NULL)
         return 0;
     
     *length = lineLength;
