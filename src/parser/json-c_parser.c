@@ -1,73 +1,27 @@
+/* Copyright © 2022 Jan Šaler
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
+and associated documentation files (the “Software”), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute, 
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished
+to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies 
+or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE 
+AND NONINFRINGEMENT. 
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, 
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
+IN THE SOFTWARE.
+*/
 #include "json-c_parser.h"
 
-#include <stdio.h>
+#include "json-c_utils.h"
 #include <stdlib.h>
 #include <string.h>
-
-static int jsonFileGetLine(char **out, int *length, FILE *stream)
-{
-    free(out);
-
-    // The ptr to the start of the line in the stream
-    int startCharIndex = -1;
-    // The ptr to the end of the line in the stream
-    int endCharIndex = -1;
-
-    // Used to set the start pointer because when the stream is first passed in,
-    // the file ptr is set to NULL. Using fgetc sets the ptr to the appropriate place,
-    // so setting startCharIndex is worth it only after fgetc is called for the first time.
-    int firstIter = 1;
-    while(feof(stream) == 0)
-    {
-        char c = fgetc(stream);
-
-        // Don't run the loop if end-of-file was reached because there's no point to work with the character further
-        if(c == EOF)
-            continue;
-
-        if(firstIter)
-        {
-            startCharIndex = ftell(stream) - 1;
-            firstIter = 0;
-        }
-
-        // Move the start of the line past whitespaces and tabs
-        // Not using a switch statement here because we need to be
-        // able to break out of the loop, whereas break in a switch statement
-        // only ends the case
-        // NOTE: A potential issue might arise if a whitespace finds itself
-        // eg. right before the newline char. Needs testing
-        if (c == ' ' || c == '\t')
-            startCharIndex++;
-        else if (c =='\n')
-        {
-            endCharIndex = ftell(stream);
-            break;
-        }
-    }
-
-    // No line needs to be saved because end-of-file was reached 
-    if(endCharIndex == -1)
-        return 0;
-
-    int lineLength = endCharIndex - startCharIndex;
-    // Allocate enough space for all of the characters on the line
-    // Because fgets gets a string up to n-1 characters, the last character is reserved
-    // for the null-terminating char, so allocating lineLength + 1 to set aside space for it is not needed
-    *out = (char*)malloc((size_t)(lineLength));
-    
-    // Shift the file pointer to the start of the line so that we can use
-    // the fgets function and read lineLength characters to get the line string    
-    if(fseek(stream, startCharIndex, SEEK_SET) != 0)
-        return 0;
-    // fgets appends a null-terminating character to the string automatically
-    // so adding it manually is not necessarry
-    if(fgets(*out, lineLength, stream) == NULL)
-        return 0;
-    
-    *length = lineLength;
-    return 1;
-}
 
 int jsonParseFile(JSONParser *parser, const char *path)
 {
@@ -105,89 +59,64 @@ int jsonParseFile(JSONParser *parser, const char *path)
     {
         int keyStartQuoteIndex = -1;
         int keyEndQuoteIndex = -1;
-        char *key;
+        char *key = NULL;
+        
+        int valueStartIndex = -1;
+        int valueEndIndex = -1;
+        JSONValue value;
+        
+        JSONPair pair;
 
         for (size_t i = 0; i < lineLength; i++)
         {
-            // WIP
-            // switch(line[i])
-            // {
-            //     case '"':
-            //     {
-            //         // FIXME: Causes segfault because the indexes get overwritten to -1,
-            //         // probably due to a wonky condition
-            //         keyStartQuoteIndex = keyStartQuoteIndex == -1 ? i : -1;
-            //         keyEndQuoteIndex = (keyEndQuoteIndex == -1) && (keyStartQuoteIndex != -1) ? i : -1; 
-            //     }
-            //     break;
+            switch(line[i])
+            {
+                case '"':
+                {
+                    if(key == NULL)
+                    {
+                        if(keyStartQuoteIndex == -1) 
+                            keyStartQuoteIndex = i;
+                        
+                        if((keyEndQuoteIndex == -1) && (i > keyStartQuoteIndex))
+                            keyEndQuoteIndex = i;
+                    }
+                }
+                break;
             
-            //     case ':':
-            //     {
-            //         size_t keySize = (keyEndQuoteIndex - 1) - (keyStartQuoteIndex + 1);
-            //         key = (char*)malloc(keySize);
-            //         strncpy(key, &line[keyStartQuoteIndex], keySize);
-            //     }
-            //     break;
+                case ':':
+                {
+                    size_t keySize = (keyEndQuoteIndex) - (keyStartQuoteIndex + 1);
+                    key = (char*)malloc(keySize);
+                    strncpy(key, &line[keyStartQuoteIndex + 1], keySize);
+                    key[keySize + 1] = '\0';
+                }
+                break;
 
-            //     case '{':
-            //     {
-            //         if(line[i] == 0)
-            //             continue;
-            //     }
-            //     break;
-            //     case '}':
-            //     {
-            //         if(line[i] == lineLength)
-            //             continue;
-            //     }
-            //     break;
-            // }
+                case ',':
+                {
+                    if(i == lineLength - 1 && line[i + 1] == '\n')
+                    {
+
+                    }
+                }
+                break;
+
+                case '{':
+                {
+                    if(line[i] == 0)
+                        continue;
+                }
+                break;
+                case '}':
+                {
+                    if(line[i] == lineLength)
+                        continue;
+                }
+                break;
+            }
         }
     }
-
-    // char *line = NULL;
-    // ssize_t lineLength = 0; 
-    
-    // while((lineLength = jsonFileGetLine(&line, NULL, file)) != -1)
-    // {
-    //     int keyStartQuoteIndex = -1;
-    //     int keyEndQuoteIndex = -1;
-    //     char *key;
-
-    //     for (size_t i = 0; i < lineLength; i++)
-    //     {
-    //         switch(line[i])
-    //         {
-    //             case '"':
-    //             {
-    //                 keyStartQuoteIndex = keyStartQuoteIndex == -1 ? i : -1;
-    //                 keyEndQuoteIndex = (keyEndQuoteIndex == -1) && (keyStartQuoteIndex != -1) ? i : -1; 
-    //             }
-    //             break;
-            
-    //             case ':':
-    //             {
-    //                 size_t keySize = (keyEndQuoteIndex - 1) - (keyStartQuoteIndex + 1);
-    //                 key = (char*)malloc(keySize);
-    //                 strncpy(key, &line[keyStartQuoteIndex], keySize);
-    //             }
-    //             break;
-
-    //             case '{':
-    //             {
-    //                 if(line[i] == 0)
-    //                     continue;
-    //             }
-    //             break;
-    //             case '}':
-    //             {
-    //                 if(line[i] == lineLength)
-    //                     continue;
-    //             }
-    //             break;
-    //         }
-    //     }
-    // }
 
     fclose(file);
     // TODO: Add checks whether everything has been parsed correctly. If not, return 0.

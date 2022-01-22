@@ -17,47 +17,11 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
 IN THE SOFTWARE.
 */
-#ifndef JSON_C_TYPES
-#define JSON_C_TYPES
+#ifndef JSON_C_UTILS
+#define JSON_C_UTILS
 
-// An enum containing all of the possible types a value can be
-typedef enum JSONValueType
-{
-    JSON_VALUE_TYPE_EMPTY,
-    JSON_VALUE_TYPE_INT,
-    JSON_VALUE_TYPE_FLOAT,
-    JSON_VALUE_TYPE_STRING,
-    JSON_VALUE_TYPE_BOOL,
-    JSON_VALUE_TYPE_ARRAY,
-    JSON_VALUE_TYPE_OBJECT
-} JSONValueType;
-// Holds the value of a key/value pair and its type
-typedef struct JSONValue
-{
-    void *value;
-    JSONValueType type;
-} JSONValue;
+#include <stdio.h>
 
-// Struct that holds a single key/value pair
-typedef struct JSONPair
-{
-    char *key;
-    JSONValue value;
-} JSONPair;
-
-// Struct that represents a JSON object and all of its key/value pairs 
-// Used as the value ptr of JSONPair if JSONValueType is JSON_VALUE_TYPE_OBJECT
-typedef struct JSONObject
-{
-    JSONPair *pairs;
-} JSONObject;
-
-// Struct that represents a JSON array and holds the elements, their amount and type
-// Used as the value ptr of JSONPair if JSONValueType is JSON_VALUE_TYPE_ARRAY
-typedef struct JSONArray
-{
-    JSONValue *elements;
-    unsigned int length;
-} JSONArray;
+int jsonFileGetLine(char **out, int *length, FILE *stream);
 
 #endif

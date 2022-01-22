@@ -13,7 +13,9 @@ option(JSON-C_BUILD_EXAMPLES "Builds the examples alongside the library" OFF)
 list(APPEND CORE_INCLUDES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/core"
 )
-list(APPEND CORE_SOURCES)
+list(APPEND CORE_SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/core/json-c_utils.c"
+)
 
 
 # Only the parser is compiled by default, as it is the essential part of the library
