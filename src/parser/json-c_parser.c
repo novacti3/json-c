@@ -55,67 +55,88 @@ int jsonParseFile(JSONParser *parser, const char *path)
     
     char *line = NULL;
     int lineLength = 0;
-    while(jsonFileGetLine(&line, &lineLength, file) != 0)
+    char **splitLine = NULL;
+    while(_jsonFileGetLine(&line, &lineLength, file) != 0)
     {
-        int keyStartQuoteIndex = -1;
-        int keyEndQuoteIndex = -1;
-        char *key = NULL;
-        
-        int valueStartIndex = -1;
-        int valueEndIndex = -1;
-        JSONValue value;
-        
-        JSONPair pair;
-
-        for (size_t i = 0; i < lineLength; i++)
+        int numOfStrings = 0;
+        if(_jsonSplitString(&splitLine, line, ':', &numOfStrings) == 1)
         {
-            switch(line[i])
+            char *keyStr = splitLine[0];
+            char *valueStr = splitLine[1];
+
+            // TODO: Value type and actual value parsing
+
+            JSONValue jsonValueStruct =
             {
-                case '"':
-                {
-                    if(key == NULL)
-                    {
-                        if(keyStartQuoteIndex == -1) 
-                            keyStartQuoteIndex = i;
-                        
-                        if((keyEndQuoteIndex == -1) && (i > keyStartQuoteIndex))
-                            keyEndQuoteIndex = i;
-                    }
-                }
-                break;
+                .type = JSON_VALUE_TYPE_EMPTY,
+                .value = valueStr
+            };
             
-                case ':':
-                {
-                    size_t keySize = (keyEndQuoteIndex) - (keyStartQuoteIndex + 1);
-                    key = (char*)malloc(keySize);
-                    strncpy(key, &line[keyStartQuoteIndex + 1], keySize);
-                    key[keySize + 1] = '\0';
-                }
-                break;
-
-                case ',':
-                {
-                    if(i == lineLength - 1 && line[i + 1] == '\n')
-                    {
-
-                    }
-                }
-                break;
-
-                case '{':
-                {
-                    if(line[i] == 0)
-                        continue;
-                }
-                break;
-                case '}':
-                {
-                    if(line[i] == lineLength)
-                        continue;
-                }
-                break;
-            }
+            JSONPair pair = 
+            {
+                .key = keyStr, 
+                .value = jsonValueStruct
+            };
         }
+        // int keyStartQuoteIndex = -1;
+        // int keyEndQuoteIndex = -1;
+        // char *key = NULL;
+        
+        // int valueStartIndex = -1;
+        // int valueEndIndex = -1;
+        // JSONValue value;
+        
+        // JSONPair pair;
+
+        // for (size_t i = 0; i < lineLength; i++)
+        // {
+        //     switch(line[i])
+        //     {
+        //         case '"':
+        //         {
+        //             if(key == NULL)
+        //             {
+        //                 if(keyStartQuoteIndex == -1) 
+        //                     keyStartQuoteIndex = i;
+                        
+        //                 if((keyEndQuoteIndex == -1) && (i > keyStartQuoteIndex))
+        //                     keyEndQuoteIndex = i;
+        //             }
+        //         }
+        //         break;
+            
+        //         case ':':
+        //         {
+        //             size_t keySize = (keyEndQuoteIndex) - (keyStartQuoteIndex + 1);
+        //             key = (char*)malloc(keySize);
+        //             strncpy(key, &line[keyStartQuoteIndex + 1], keySize);
+        //             key[keySize + 1] = '\0';
+        //         }
+        //         break;
+
+        //         case ',':
+        //         {
+        //             if(i == lineLength - 1 && line[i + 1] == '\n')
+        //             {
+
+        //             }
+        //         }
+        //         break;
+
+        //         case '{':
+        //         {
+        //             if(line[i] == 0)
+        //                 continue;
+        //         }
+        //         break;
+        //         case '}':
+        //         {
+        //             if(line[i] == lineLength)
+        //                 continue;
+        //         }
+        //         break;
+        //     }
+        // }
     }
 
     fclose(file);

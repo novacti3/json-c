@@ -22,6 +22,7 @@ IN THE SOFTWARE.
 
 #include <stdio.h>
 
-int jsonFileGetLine(char **out, int *length, FILE *stream);
+int _jsonFileGetLine(char **out, int *length, FILE *stream);
+int _jsonSplitString(char ***dest, const char* const src, const char delim, int* const numOfStrings);
 
 #endif
