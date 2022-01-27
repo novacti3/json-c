@@ -22,7 +22,9 @@ IN THE SOFTWARE.
 #include <stdlib.h>
 #include <string.h>
 
+// Forward declarations
 static int _jsonFreeStringArray(char ***array, const int* const length);
+// ----------
 
 int _jsonFileGetLine(char **out, int *length, FILE *stream)
 {

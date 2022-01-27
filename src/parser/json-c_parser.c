@@ -23,29 +23,23 @@ IN THE SOFTWARE.
 #include <stdlib.h>
 #include <string.h>
 
+// Internal function forward declarations
+static int _jsonParseValueString(const char** const str, JSONValue* const out);
+// ----------
+
 int jsonParseFile(JSONParser *parser, const char *path)
 {
     /* 
-    Open the file
-    Go through the file line by line
-    
-    Split each line into tokens:
-        Ignore the first and last line (they are just {} signifying the root JSON object)
-        Go through the line character by character
-        
-        First parse the key. Save the first " char index, 
-        then keep going until the second " is encountered.
-        Our key is (endQuoteIndex - 1) - (startQuoteIndex + 1). 
-        The -1 and +1 gets rid of the actual " char and only extracts the actual key string.
-        Store in a key string.
-
-        Check for :. After encountering it, start checking for the value
-        Value parsing WIP
-
-        Save in a JSONPair object.
-
-        If the last character of the line is ',', start a new JSONPair and repeat.
+    1. Open the file
+    2. Go through the file line by line
+    3. Split each line into tokens:
+        3.1: The first token is the key, the second token is the value string
+        3.2: Parse the value string and turn it into a JSONValue struct
+    4. Put the key and value into a JSONPair struct
+    5. Add this new pair into the parser's list of JSONPairs
     */
+
+    // 1. Open the file
     FILE *file = fopen(path, "r");
 
     if(file == NULL)
@@ -53,25 +47,28 @@ int jsonParseFile(JSONParser *parser, const char *path)
     
     fseek(file, 0, SEEK_SET);
     
+    // 2. Go through the file line by line
     char *line = NULL;
     int lineLength = 0;
     char **splitLine = NULL;
     while(_jsonFileGetLine(&line, &lineLength, file) != 0)
     {
+        // 3. Split each line into tokens
         int numOfStrings = 0;
         if(_jsonSplitString(&splitLine, line, ':', &numOfStrings) == 1)
         {
-            char *keyStr = splitLine[0];
-            char *valueStr = splitLine[1];
+            // 3.1: The first token is the key, the second token is the value string
+            // FIXME: Exclude the start and end double quotes in the key 
+            char* keyStr = splitLine[0];
+            char* valueStr = splitLine[1];
 
-            // TODO: Value type and actual value parsing
-
-            JSONValue jsonValueStruct =
-            {
-                .type = JSON_VALUE_TYPE_EMPTY,
-                .value = valueStr
-            };
+            // 3.2: Parse the value string and turn it into a JSONValue struct  
+            JSONValue jsonValueStruct;
+            _jsonParseValueString(&valueStr, &jsonValueStruct);
             
+            // 4. Put the key and value into a JSONPair struct
+            // NOTE: This should probably be manually allocated 
+            //       to ensure the lifetime
             JSONPair pair = 
             {
                 .key = keyStr, 
@@ -147,4 +144,45 @@ int jsonParseFile(JSONParser *parser, const char *path)
 void jsonClearParser(JSONParser *parser)
 {
 
+}
+
+static int _jsonParseValueString(const char** const str, JSONValue* const out)
+{
+    const char* const jsonString = *str;
+    
+    for (size_t i = 0; i < strlen(jsonString); i++)
+    {
+        // Judging by the first character in the string,
+        // we can determine what type of value we are talking about
+        if(i == 0)
+        {
+            switch(jsonString[i])
+            {
+                // If the first character is a double quote,
+                // the type is guaranteed to be a STRING
+                case '"':
+                {
+                    // The length of the string is the length
+                    // -1 double quote (only at the end because the first one is going to be excluded when copying the string)
+                    // -1 comma at the end of the line
+                    // -1 \n char at the very end of the line (TEMPORARY until I fix the _jsonGetLine func)
+                    int valueStringLength = strlen(jsonString) - 1 - 1 - 1;
+                    // Allocate +1 char for a null-termination character
+                    char* valueString = (char*)malloc((valueStringLength + 1) * sizeof(char));
+
+                    // Copy the string starting from past the start double quote
+                    strncpy(valueString, jsonString + 1, (size_t)(valueStringLength));
+                    valueString[valueStringLength + 1] = '\0';
+
+                    out->type = JSON_VALUE_TYPE_STRING;
+                    out->value = (void*)valueString;
+
+                    // Value successfully parsed
+                    return 1;
+                }
+                break;
+            }
+
+        }
+    }
 }
