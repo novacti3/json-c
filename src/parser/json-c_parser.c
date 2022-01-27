@@ -22,6 +22,7 @@ IN THE SOFTWARE.
 #include "json-c_utils.h"
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 // Internal function forward declarations
 static int _jsonParseValueString(const char** const str, JSONValue* const out);
@@ -198,6 +199,60 @@ static int _jsonParseValueString(const char** const str, JSONValue* const out)
                     out->value = (void*)valueString;
 
                     // Value successfully parsed
+                    return 1;
+                }
+                break;
+
+                // If the first character is a digit,
+                // the value is guaranteed to be a NUMBER
+                // (either an int or a float)
+                // NOTE: Using the isdigit() function would make more sense and would be easier,
+                //       however, for the sake of cohesion, I decided to write it out here
+                //       in the switch statement so all of the value type parsing stays grouped together
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                {
+                    // The length of the string is the length
+                    // -1 comma at the end of the line
+                    int valueStringLength = strlen(jsonString) - 1;
+                    char* valueString = (char*)malloc((valueStringLength + 1) * sizeof(char));
+                    strncpy(valueString, jsonString, (size_t)(valueStringLength));
+                    valueString[valueStringLength] = '\0';
+
+                    // If a dot is present in the string, the value is of type FLOAT,
+                    // otherwise it's a regular INT
+                    // NOTE: Adding support for the E float notation would be nice
+                    //       (eg. 100.0 => 1E+2 or 1.0E+2)
+                    if(strchr(valueString, '.') != NULL)
+                    {
+                        // Allocate on heap to ensure that the value
+                        // doesn't delete after exiting this block
+                        float *value = (float*)malloc(sizeof(float));
+                        *value = atof(valueString);
+
+                        out->type = JSON_VALUE_TYPE_FLOAT;
+                        out->value = (void*)value;
+                    }
+                    else
+                    {
+                        int *value = (int*)malloc(sizeof(int));
+                        *value = atoi(valueString);
+                        
+                        out->type = JSON_VALUE_TYPE_INT;
+                        out->value = (void*)value;
+                    }
+                    
+                    // Preserving the value string is not necessary
+                    // because its use has reached its end
+                    free(valueString);
                     return 1;
                 }
                 break;
