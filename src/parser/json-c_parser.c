@@ -25,6 +25,7 @@ IN THE SOFTWARE.
 #include <ctype.h>
 
 // Internal function forward declarations
+static char *_jsonPolishValueString(const char* const str, char **out, const int offsetFromStart, const int numOfCharsToOmit);
 static int _jsonParseValueString(const char** const str, JSONValue* const out);
 // ----------
 
@@ -96,65 +97,6 @@ int jsonParseFile(JSONParser *parser, const char *path)
             free((void*)rawKeyStr);
             free((void*)rawValueStr);
         }
-        // int keyStartQuoteIndex = -1;
-        // int keyEndQuoteIndex = -1;
-        // char *key = NULL;
-        
-        // int valueStartIndex = -1;
-        // int valueEndIndex = -1;
-        // JSONValue value;
-        
-        // JSONPair pair;
-
-        // for (size_t i = 0; i < lineLength; i++)
-        // {
-        //     switch(line[i])
-        //     {
-        //         case '"':
-        //         {
-        //             if(key == NULL)
-        //             {
-        //                 if(keyStartQuoteIndex == -1) 
-        //                     keyStartQuoteIndex = i;
-                        
-        //                 if((keyEndQuoteIndex == -1) && (i > keyStartQuoteIndex))
-        //                     keyEndQuoteIndex = i;
-        //             }
-        //         }
-        //         break;
-            
-        //         case ':':
-        //         {
-        //             size_t keySize = (keyEndQuoteIndex) - (keyStartQuoteIndex + 1);
-        //             key = (char*)malloc(keySize);
-        //             strncpy(key, &line[keyStartQuoteIndex + 1], keySize);
-        //             key[keySize + 1] = '\0';
-        //         }
-        //         break;
-
-        //         case ',':
-        //         {
-        //             if(i == lineLength - 1 && line[i + 1] == '\n')
-        //             {
-
-        //             }
-        //         }
-        //         break;
-
-        //         case '{':
-        //         {
-        //             if(line[i] == 0)
-        //                 continue;
-        //         }
-        //         break;
-        //         case '}':
-        //         {
-        //             if(line[i] == lineLength)
-        //                 continue;
-        //         }
-        //         break;
-        //     }
-        // }
     }
 
     fclose(file);
@@ -165,6 +107,22 @@ int jsonParseFile(JSONParser *parser, const char *path)
 void jsonClearParser(JSONParser *parser)
 {
 
+}
+
+static char *_jsonPolishValueString(const char* const str, char** out, const int offsetFromStart, const int numOfCharsToOmit)
+{
+    int polishedStringLength = strlen(str) - numOfCharsToOmit;
+    // Allocate +1 char for a null-termination character
+    char* polishedString = (char*)malloc((polishedStringLength + 1) * sizeof(char));
+    strncpy(polishedString, str + offsetFromStart, (size_t)(polishedStringLength));
+    // Because of array indexes starting from 0,
+    // a str of length 4 would have the indexes 0-3
+    // and length leads directly to extra allocated char 
+    // for null-termination char
+    polishedString[polishedStringLength] = '\0';
+
+    *out = polishedString;
+    return polishedString;
 }
 
 static int _jsonParseValueString(const char** const str, JSONValue* const out)
@@ -198,15 +156,8 @@ static int _jsonParseValueString(const char** const str, JSONValue* const out)
                 {
                     // The length of the string is the length
                     // -1 comma at the end of the line
-                    int valueStringLength = strlen(jsonString) - 1;
-                    // Allocate +1 char for a null-termination character
-                    char* valueString = (char*)malloc((valueStringLength + 1) * sizeof(char));
-                    strncpy(valueString, jsonString, (size_t)(valueStringLength));
-                    // Because of array indexes starting from 0,
-                    // a str of length 4 would have the indexes 0-3
-                    // and length leads directly to extra allocated char 
-                    // for null-termination char
-                    valueString[valueStringLength] = '\0';
+                    char *valueString = NULL;
+                    _jsonPolishValueString(jsonString, &valueString, 0, 1);
 
                     // If a dot is present in the string, the value is of type FLOAT,
                     // otherwise it's a regular INT
@@ -245,11 +196,9 @@ static int _jsonParseValueString(const char** const str, JSONValue* const out)
                     // The length of the string is the length
                     // -2 double quotes (start and end)
                     // -1 comma at the end of the line
-                    int valueStringLength = strlen(jsonString) - 2 - 1;
-                    char* valueString = (char*)malloc((valueStringLength + 1) * sizeof(char));
+                    char *valueString = NULL;
                     // Copy the string starting from past the start double quote
-                    strncpy(valueString, jsonString + 1, (size_t)(valueStringLength));
-                    valueString[valueStringLength] = '\0';
+                    _jsonPolishValueString(jsonString, &valueString, 1, 3);
 
                     out->type = JSON_VALUE_TYPE_STRING;
                     out->value = (void*)valueString;
@@ -266,10 +215,8 @@ static int _jsonParseValueString(const char** const str, JSONValue* const out)
                 {
                     // The length of the string is the length
                     // -1 comma at the end of the line
-                    int valueStringLength = strlen(jsonString) - 1;
-                    char* valueString = (char*)malloc((valueStringLength + 1) * sizeof(char));
-                    strncpy(valueString, jsonString, (size_t)(valueStringLength));
-                    valueString[valueStringLength] = '\0';
+                    char *valueString = NULL;
+                    _jsonPolishValueString(jsonString, &valueString, 0, 1);
 
                     // Because C doesn't have bools out of the box,
                     // use an int
