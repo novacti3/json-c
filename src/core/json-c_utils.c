@@ -163,6 +163,10 @@ int _jsonSplitString(char ***dest, const char* const src, const char delim, int*
             // because src is a pointer to the first char in the string
             // and startIndex is the offset from the start at which the new string starts
             strncpy(newString, src + newStringStartIndex, (size_t)(newStringLength));
+            // Because of array indexes starting from 0,
+            // a str of length 4 would have the indexes 0-3
+            // and length leads directly to extra allocated char 
+            // for null-termination char
             newString[newStringLength] = '\0';
 
             if(newStringsAmount == 0)

@@ -59,21 +59,37 @@ int jsonParseFile(JSONParser *parser, const char *path)
         {
             // 3.1: The first token is the key, the second token is the value string
             // FIXME: Exclude the start and end double quotes in the key 
-            char* keyStr = splitLine[0];
-            char* valueStr = splitLine[1];
+            const char* rawKeyStr = splitLine[0];
+            const char* rawValueStr = splitLine[1];
+
+            // Remove double quotes from the key string so that it doesn't goof up
+            // JSONPair lookup later on
+            // The -1 here gets rid of the first double quote
+            // because it's going to be omitted in strncpy
+            int keyStrLength = strlen(rawKeyStr) - 1;
+            char* key = (char*)malloc(keyStrLength);
+            strncpy(key, rawKeyStr + 1, keyStrLength);
+            // strLength - 1 because arrays index from 0,
+            // therefore a string of length 5 has the last index of 4
+            key[keyStrLength - 1] = '\0';
 
             // 3.2: Parse the value string and turn it into a JSONValue struct  
             JSONValue jsonValueStruct;
-            _jsonParseValueString(&valueStr, &jsonValueStruct);
+            _jsonParseValueString(&rawValueStr, &jsonValueStruct);
             
             // 4. Put the key and value into a JSONPair struct
             // NOTE: This should probably be manually allocated 
             //       to ensure the lifetime
             JSONPair pair = 
             {
-                .key = keyStr, 
+                .key = key, 
                 .value = jsonValueStruct
             };
+
+            // Free the raw strings because they have been parsed and copied into new strings
+            // Avoids a memory leak
+            free((void*)rawKeyStr);
+            free((void*)rawValueStr);
         }
         // int keyStartQuoteIndex = -1;
         // int keyEndQuoteIndex = -1;
@@ -172,7 +188,11 @@ static int _jsonParseValueString(const char** const str, JSONValue* const out)
 
                     // Copy the string starting from past the start double quote
                     strncpy(valueString, jsonString + 1, (size_t)(valueStringLength));
-                    valueString[valueStringLength + 1] = '\0';
+                    // Because of array indexes starting from 0,
+                    // a str of length 4 would have the indexes 0-3
+                    // and length leads directly to extra allocated char 
+                    // for null-termination char
+                    valueString[valueStringLength] = '\0';
 
                     out->type = JSON_VALUE_TYPE_STRING;
                     out->value = (void*)valueString;
