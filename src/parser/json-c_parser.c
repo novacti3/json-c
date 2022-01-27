@@ -59,7 +59,6 @@ int jsonParseFile(JSONParser *parser, const char *path)
         if(_jsonSplitString(&splitLine, line, ':', &numOfStrings) == 1)
         {
             // 3.1: The first token is the key, the second token is the value string
-            // FIXME: Exclude the start and end double quotes in the key 
             const char* rawKeyStr = splitLine[0];
             const char* rawValueStr = splitLine[1];
 
@@ -86,6 +85,11 @@ int jsonParseFile(JSONParser *parser, const char *path)
                 .key = key, 
                 .value = jsonValueStruct
             };
+
+            // TODO: Save pairs to the parser
+            // Resizing the array constantly seems incredibly expensive
+            // Maybe there is a way to count the amount of pairs by reading the entire file?
+            // That way, an array of all lines could be returned and then looped through as well
 
             // Free the raw strings because they have been parsed and copied into new strings
             // Avoids a memory leak
@@ -175,34 +179,6 @@ static int _jsonParseValueString(const char** const str, JSONValue* const out)
         {
             switch(jsonString[i])
             {
-                // If the first character is a double quote,
-                // the type is guaranteed to be a STRING
-                case '"':
-                {
-                    // The length of the string is the length
-                    // -1 double quote (only at the end because the first one is going to be excluded when copying the string)
-                    // -1 comma at the end of the line
-                    // -1 \n char at the very end of the line (TEMPORARY until I fix the _jsonGetLine func)
-                    int valueStringLength = strlen(jsonString) - 1 - 1 - 1;
-                    // Allocate +1 char for a null-termination character
-                    char* valueString = (char*)malloc((valueStringLength + 1) * sizeof(char));
-
-                    // Copy the string starting from past the start double quote
-                    strncpy(valueString, jsonString + 1, (size_t)(valueStringLength));
-                    // Because of array indexes starting from 0,
-                    // a str of length 4 would have the indexes 0-3
-                    // and length leads directly to extra allocated char 
-                    // for null-termination char
-                    valueString[valueStringLength] = '\0';
-
-                    out->type = JSON_VALUE_TYPE_STRING;
-                    out->value = (void*)valueString;
-
-                    // Value successfully parsed
-                    return 1;
-                }
-                break;
-
                 // If the first character is a digit,
                 // the value is guaranteed to be a NUMBER
                 // (either an int or a float)
@@ -223,8 +199,13 @@ static int _jsonParseValueString(const char** const str, JSONValue* const out)
                     // The length of the string is the length
                     // -1 comma at the end of the line
                     int valueStringLength = strlen(jsonString) - 1;
+                    // Allocate +1 char for a null-termination character
                     char* valueString = (char*)malloc((valueStringLength + 1) * sizeof(char));
                     strncpy(valueString, jsonString, (size_t)(valueStringLength));
+                    // Because of array indexes starting from 0,
+                    // a str of length 4 would have the indexes 0-3
+                    // and length leads directly to extra allocated char 
+                    // for null-termination char
                     valueString[valueStringLength] = '\0';
 
                     // If a dot is present in the string, the value is of type FLOAT,
@@ -256,8 +237,52 @@ static int _jsonParseValueString(const char** const str, JSONValue* const out)
                     return 1;
                 }
                 break;
-            }
 
+                // If the first character is a double quote,
+                // the type is guaranteed to be a STRING
+                case '"':
+                {
+                    // The length of the string is the length
+                    // -2 double quotes (start and end)
+                    // -1 comma at the end of the line
+                    int valueStringLength = strlen(jsonString) - 2 - 1;
+                    char* valueString = (char*)malloc((valueStringLength + 1) * sizeof(char));
+                    // Copy the string starting from past the start double quote
+                    strncpy(valueString, jsonString + 1, (size_t)(valueStringLength));
+                    valueString[valueStringLength] = '\0';
+
+                    out->type = JSON_VALUE_TYPE_STRING;
+                    out->value = (void*)valueString;
+
+                    // Value successfully parsed
+                    return 1;
+                }
+                break;
+
+                // If the first character is t(rue) or f(alse),
+                // the type is guaranteed to be a BOOL
+                case 't':
+                case 'f':
+                {
+                    // The length of the string is the length
+                    // -1 comma at the end of the line
+                    int valueStringLength = strlen(jsonString) - 1;
+                    char* valueString = (char*)malloc((valueStringLength + 1) * sizeof(char));
+                    strncpy(valueString, jsonString, (size_t)(valueStringLength));
+                    valueString[valueStringLength] = '\0';
+
+                    // Because C doesn't have bools out of the box,
+                    // use an int
+                    int *value = (int*)malloc(sizeof(int));
+                    *value = strcmp("true", valueString) == 0 ? 1 : 0;
+                    
+                    out->type = JSON_VALUE_TYPE_BOOL;
+                    out->value = (void*)value;
+
+                    return 1;
+                }
+                break;
+            }
         }
     }
 }

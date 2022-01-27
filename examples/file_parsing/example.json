@@ -2,6 +2,7 @@
     "name":"Jack",
     "age":30,
     "weight":93.5,
+    "isAdult":true,
     "contactNumbers":[
         {
             "type":"Home",

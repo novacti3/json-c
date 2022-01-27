@@ -23,7 +23,7 @@ IN THE SOFTWARE.
 // An enum containing all of the possible types a value can be
 typedef enum JSONValueType
 {
-    JSON_VALUE_TYPE_EMPTY,
+    JSON_VALUE_TYPE_NULL,
     JSON_VALUE_TYPE_INT,
     JSON_VALUE_TYPE_FLOAT,
     JSON_VALUE_TYPE_STRING,
