@@ -41,5 +41,7 @@ int main()
         break;
     }
     
+    getchar();
+
     return 0;
 }

@@ -1,8 +1,24 @@
+# Copyright © 2022 Jan Šaler
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software 
+# and associated documentation files (the “Software”), to deal in the Software without restriction,
+# including without limitation the rights to use, copy, modify, merge, publish, distribute, 
+# sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished
+# to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in all copies 
+# or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE 
+# AND NONINFRINGEMENT. 
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, 
+# DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, 
+# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
+# IN THE SOFTWARE.
 cmake_minimum_required(VERSION 3.20)
 
-file(MAKE_DIRECTORY bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY bin)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY bin)
+file(MAKE_DIRECTORY build/lib)
 
 project(JSON-C DESCRIPTION "JSON parse/serialization library written in C11" LANGUAGES C)
 
@@ -54,14 +70,23 @@ else()
     add_library(JSON-C STATIC)
 endif()
 
-set_target_properties(JSON-C PROPERTIES C_STANDARD 11)
-set_target_properties(JSON-C PROPERTIES C_STANDARD_REQUIRED 11)
-set_target_properties(JSON-C PROPERTIES LINKER_LANGUAGE C)
+set_target_properties(JSON-C PROPERTIES 
+    C_STANDARD 11
+    C_STANDARD_REQUIRED 11
+    LINKER_LANGUAGE C
+
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib"
+    OUTPUT_NAME "json-c"
+)
 
 add_compile_definitions(JSON_C_SERIALIZATION_COMPILED=1)
 target_include_directories(JSON-C PUBLIC ${CORE_INCLUDES} ${PARSER_INCLUDES} ${SERIALIZER_INCLUDES} ${DESERIALIZER_INCLUDES})
-target_sources(JSON-C PUBLIC ${CORE_SOURCES} ${PARSER_SOURCES} ${SERIALIZER_SOURCES} ${DESERIALIZER_SOURCES})
+target_sources(JSON-C 
+    PRIVATE ${CORE_SOURCES} 
+    PUBLIC ${PARSER_SOURCES} ${SERIALIZER_SOURCES} ${DESERIALIZER_SOURCES}
+)
 
 if(JSON-C_BUILD_EXAMPLES)
-    add_subdirectory(examples/file_parsing bin)
+    add_subdirectory(examples/file_parsing)
 endif()
