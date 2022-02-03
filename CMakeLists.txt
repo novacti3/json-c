@@ -31,6 +31,7 @@ list(APPEND CORE_INCLUDES
 )
 list(APPEND CORE_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/core/json-c_utils.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/core/json-c_linked_list.c"
 )
 
 

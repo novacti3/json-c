@@ -106,13 +106,12 @@ int _jsonSplitString(char ***dest, const char* const src, const char delim, int*
     // NOTE: Freeing here might actually goof up the keys and value ptrs
     //       in the previous JSONPairs, because it'd free them up. 
     //       Needs investigation.
-    // Free the passed in array to avoid memory leaks
-    // because it's going to get reassigned to a newly created array
-    // that has the amount of elements required 
-    // if(stringsArray != NULL)
-    // {
-    //     _jsonFreeStringArray(&stringsArray, numOfStrings);
-    // }
+    // Free the passed in array because it has obsolete data 
+    // that has already been saved into JSONPairs. Avoids memory leak
+    if(stringsArray != NULL)
+    {
+        _jsonFreeStringArray(&stringsArray, numOfStrings);
+    }
     stringsArray = NULL;
     *numOfStrings = 0;
 

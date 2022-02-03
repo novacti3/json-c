@@ -20,6 +20,7 @@ IN THE SOFTWARE.
 #include "json-c_parser.h"
 
 #include "json-c_utils.h"
+#include "json-c_linked_list.h"
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -27,7 +28,7 @@ IN THE SOFTWARE.
 // Internal function forward declarations
 static char *_jsonPolishValueString(const char* const str, char **out, const int offsetFromStart, const int numOfCharsToOmit);
 static int _jsonParseValueString(const char** const str, JSONValue* const out);
-// ----------
+// --------------------
 
 int jsonParseFile(JSONParser *parser, const char *path)
 {
@@ -50,6 +51,9 @@ int jsonParseFile(JSONParser *parser, const char *path)
     fseek(file, 0, SEEK_SET);
     
     // 2. Go through the file line by line
+    JSONLinkedList *pairsList;
+    jsonLinkedListCreate(&pairsList);
+    
     char *line = NULL;
     int lineLength = 0;
     char **splitLine = NULL;
@@ -79,25 +83,23 @@ int jsonParseFile(JSONParser *parser, const char *path)
             _jsonParseValueString(&rawValueStr, &jsonValueStruct);
             
             // 4. Put the key and value into a JSONPair struct
-            // NOTE: This should probably be manually allocated 
-            //       to ensure the lifetime
-            JSONPair pair = 
-            {
-                .key = key, 
-                .value = jsonValueStruct
-            };
-
+            // If a JSONObject or JSONArray are being parsed,
+            // add the JSONValue struct to the pair once they are complete
+            JSONPair *pair = (JSONPair*)malloc(sizeof(JSONPair));
+            pair->key = key;
+            pair->value = jsonValueStruct;
+            
             // TODO: Save pairs to the parser
-            // Resizing the array constantly seems incredibly expensive
-            // Maybe there is a way to count the amount of pairs by reading the entire file?
-            // That way, an array of all lines could be returned and then looped through as well
+            jsonLinkedListPushBack(&pairsList, (void*)(&pair));
 
-            // Free the raw strings because they have been parsed and copied into new strings
+            // Free the raw strings because they have been parsed and copied into new strings/values
             // Avoids a memory leak
             free((void*)rawKeyStr);
             free((void*)rawValueStr);
         }
     }
+
+    jsonLinkedListFree(&pairsList);
 
     fclose(file);
     // TODO: Add checks whether everything has been parsed correctly. If not, return 0.
@@ -133,10 +135,24 @@ static int _jsonParseValueString(const char** const str, JSONValue* const out)
     {
         // Judging by the first character in the string,
         // we can determine what type of value we are talking about
+        // FIXME: Currently, if the first character is a whitespace, this whole code breaks
+        //        Either pass in a string that's already free of them
+        //        or figure out a way to ignore them
         if(i == 0)
         {
             switch(jsonString[i])
             {
+                // If the first character is n(ull),
+                // the value is guaranteed to be NULL
+                case 'n':
+                {
+                    out->type = JSON_VALUE_TYPE_NULL;
+                    out->value = NULL;
+                    
+                    return 1;
+                }
+                break;
+
                 // If the first character is a digit,
                 // the value is guaranteed to be a NUMBER
                 // (either an int or a float)
@@ -229,6 +245,9 @@ static int _jsonParseValueString(const char** const str, JSONValue* const out)
                     return 1;
                 }
                 break;
+
+                // TODO: Object parsing
+                // TODO: Array parsing
             }
         }
     }

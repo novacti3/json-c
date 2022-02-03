@@ -38,6 +38,7 @@ JSON file format:
 typedef struct JSONParser
 {
     char *filePath;
+    int numOfPairs;
     JSONPair *pairs;
 } JSONParser;
 
