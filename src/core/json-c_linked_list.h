@@ -25,57 +25,117 @@ IN THE SOFTWARE.
 typedef struct JSONLinkedList JSONLinkedList;
 typedef struct JSONLinkedListNode JSONLinkedListNode;
 
+// Represents a linked list data structure of n nodes
 typedef struct JSONLinkedList
 {
     int size;
     JSONLinkedListNode *start;
 } JSONLinkedList;
 
+// Represents a single node in a linked list data structure
 typedef struct JSONLinkedListNode
 {
     JSONLinkedListNode *next;
     void *data;
 } JSONLinkedListNode;
 
-// Creates a new linked list
-// Returns 1 if successful, 0 if unsuccessful
+/*
+Creates a new linked list
+
+If the provided list ptr is not NULL, 
+the function frees the currently present list 
+and replaces the old list with an empty one
+
+Returns: 
+1 -- successfully allocated a new empty list
+0 -- allocation was unsuccessful
+*/
 int jsonLinkedListCreate(JSONLinkedList **list);
-// Frees the provided list and all of its nodes
-// Returns 1 if all nodes were freed correctly, 0 if not, -1 if the list is uninitialized
+/*
+Frees the provided list and all of its nodes
+Returns: 
+ 1 -- all nodes were freed correctly
+ 0 -- some nodes were not freed
+-1 -- provided list is uninitialized
+*/
 int jsonLinkedListFree(JSONLinkedList **list);
 
-// Checks whether some node in the provided list contains the desired value
-// Returns 1 if the value was found, 0 if not, -1 if the list is uninitialized
+/*
+Checks whether some node in the provided list contains the desired value
+Returns: 
+ 1 -- value was found
+ 0 -- value was NOT found
+-1 -- provided list is uninitialized
+*/
 int jsonLinkedListContains(const JSONLinkedList* const list, void *value);
 
-// Retrieves the value of a node at the provided index
-// Returns 1 if the index was found and a value was successfully retrieved,
-// 0 if a node at the desired index doesn't exist,
-// -1 if the list is uninitialized
+/*
+Retrieves the value of a node at the provided index
+Returns:
+ 1 -- index was found and a value was successfully retrieved,
+ 0 -- node at the desired index doesn't exist,
+-1 -- provided list is uninitialized
+*/
 int jsonLinkedListAt(const JSONLinkedList* const list, int index, const void* const outValue);
-// Inserts the specified value into a node at the desired index
-// Returns 1 if inserted successfully, 0 if not, -1 if list is uninitialized
+
+/*
+Inserts the specified value into a node at the desired index
+Returns:
+ 1 -- value inserted successfully
+ 0 -- failed inserting value
+-1 -- provided list is uninitialized
+*/
 int jsonLinkedListInsert(JSONLinkedList* const list, int index, const void* const value);
-// Removes and frees the node at the desired index
-// Returns 1 if removed successfully, 0 if not, -1 if list is uninitialized
+/*
+Removes and frees the node at the desired index
+Returns:
+ 1 -- node removed successfully
+ 0 -- failed removing node
+-1 -- provided list is uninitialized
+*/
 int jsonLinkedListRemove(JSONLinkedList* const list, int index);
 
-// Inserts the value to the front of the list
-// Returns 1 if successful, 0 if not, -1 if list is uninitialized
+/*
+Inserts a value to the front of the list
+Returns:
+ 1 -- value inserted successfully
+ 0 -- failed inserting value
+-1 -- provided list is uninitialized
+*/
 int jsonLinkedListPushFront(JSONLinkedList* const list, void** const value);
-// Removes the value at the beginning of the list
-// Returns 1 if successful, 0 if not, -1 if list is uninitialized
+/*
+Removes the value at the beginning of the list
+Returns:
+ 1 -- value removed successfully
+ 0 -- failed removing value
+-1 -- provided list is uninitialized
+*/
 int jsonLinkedListPopFront(JSONLinkedList *list);
 
-// Inserts the value to the end of the list
-// Returns 1 if successful, 0 if not, -1 if list is uninitialized
+/*
+Inserts a value to the end of the list
+Returns:
+ 1 -- value inserted successfully
+ 0 -- failed inserting value
+-1 -- provided list is uninitialized
+*/
 int jsonLinkedListPushBack(JSONLinkedList** const list, void** const value);
-// Removes the value at the end of the list
-// Returns 1 if successful, 0 if not, -1 if list is uninitialized
+/*
+Removes the value at the end of the list
+Returns:
+ 1 -- value removed successfully
+ 0 -- failed removing value
+-1 -- provided list is uninitialized
+*/
 int jsonLinkedListPopBack(JSONLinkedList** const list);
 
-// Converts the list into a regular C-style array
-// Returns 1 if successful, 0 if not, -1 if list is uninitialized
+/*
+Converts the list into a regular C-style array
+Returns:
+ 1 -- array created successfully
+ 0 -- failed creating array
+-1 -- provided list is uninitialized
+*/
 int jsonLinkedListToArray(const JSONLinkedList* const list, void* outArray);
 
 #endif
