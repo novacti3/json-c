@@ -21,11 +21,11 @@ cmake_minimum_required(VERSION 3.20)
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
 file(COPY "example.json" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/bin")
 
-project(JSON-C_FILE_PARSING_EXAMPLE DESCRIPTION "Example of file parsing for the JSON-C library" LANGUAGES C)
+project(JSON-C_EXAMPLE_FILE_PARSING DESCRIPTION "Example of file parsing for the JSON-C library" LANGUAGES C)
 
-add_executable(JSON-C_FILE_PARSING_EXAMPLE file_parsing.c)
+add_executable(JSON-C_EXAMPLE_FILE_PARSING file_parsing.c)
 
-set_target_properties(JSON-C_FILE_PARSING_EXAMPLE PROPERTIES
+set_target_properties(JSON-C_EXAMPLE_FILE_PARSING PROPERTIES
     C_STANDARD 11
     C_STANDARD_REQUIRED 11
     LINKER_LANGUAGE C
@@ -34,5 +34,5 @@ set_target_properties(JSON-C_FILE_PARSING_EXAMPLE PROPERTIES
     OUTPUT_NAME "FileParsing"
 )
 
-target_link_libraries(JSON-C_FILE_PARSING_EXAMPLE PRIVATE JSON-C)
-target_include_directories(JSON-C_FILE_PARSING_EXAMPLE PRIVATE "${JSON-C_SOURCE_DIR}/include")
+target_link_libraries(JSON-C_EXAMPLE_FILE_PARSING PRIVATE JSON-C)
+target_include_directories(JSON-C_EXAMPLE_FILE_PARSING PRIVATE "${JSON-C_SOURCE_DIR}/include")
