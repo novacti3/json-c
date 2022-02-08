@@ -128,7 +128,7 @@ int jsonLinkedListPushBack(JSONLinkedList** const list, void** const value)
             if(i == 0)
                 lastNode = &(linkedList->start);
             else
-                *lastNode = (*lastNode)->next;
+                lastNode = &(*lastNode)->next;
         }
     }
         
@@ -154,7 +154,31 @@ int jsonLinkedListPushBack(JSONLinkedList** const list, void** const value)
 }
 int jsonLinkedListPopBack(JSONLinkedList** const list)
 {
+    JSONLinkedList *linkedList = *list;
+    if(linkedList == NULL)
+        return -1;
 
+    // It doesn't make sense for an element to be removed from an empty list    
+    if(linkedList->size == 0)
+        return 0;
+
+    // Stores the last node of the list so that it can be removed later
+    JSONLinkedListNode **lastNode = NULL;
+    for (size_t i = 0; i < linkedList->size; i++)
+    {
+        if(i == 0)
+            lastNode = &(linkedList->start);
+        else
+            lastNode = &(*lastNode)->next;
+    }
+
+    free((*lastNode)->data);
+    (*lastNode)->data = NULL;
+    free(*lastNode);
+    *lastNode = NULL;  
+    
+    linkedList->size--;
+    return 1;    
 }
 
 int jsonLinkedListToArray(const JSONLinkedList* const list, void* outArray)

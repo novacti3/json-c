@@ -98,7 +98,10 @@ int jsonParseFile(JSONParser *parser, const char *path)
             free((void*)rawValueStr);
         }
     }
+    free(line);
+    line = NULL;
 
+    jsonLinkedListPopBack(&pairsList);
     jsonLinkedListFree(&pairsList);
 
     fclose(file);
