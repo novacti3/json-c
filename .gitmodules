@@ -1,0 +1,3 @@
+[submodule "extern/CuTest"]
+	path = extern/CuTest
+	url = https://github.com/ennorehling/cutest

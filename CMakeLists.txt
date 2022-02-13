@@ -24,6 +24,7 @@ project(JSON-C DESCRIPTION "JSON parse/serialization library written in C11" LAN
 
 option(JSON-C_COMPILE_SERIALIZATION "Compiles the serialization part of the library" ON)
 option(JSON-C_BUILD_SHARED "Builds a shared library instead of a static one" OFF)
+option(JSON-C_BUILD_TESTS "Builds the library's unit tests" OFF)
 option(JSON-C_BUILD_EXAMPLES "Builds the examples alongside the library" OFF)
 
 list(APPEND CORE_INCLUDES
@@ -87,6 +88,10 @@ target_sources(JSON-C
     PRIVATE ${CORE_SOURCES} 
     PUBLIC ${PARSER_SOURCES} ${SERIALIZER_SOURCES} ${DESERIALIZER_SOURCES}
 )
+
+if(JSON-C_BUILD_TESTS)
+    add_subdirectory(tests)
+endif()
 
 if(JSON-C_BUILD_EXAMPLES)
     add_subdirectory(examples/file_parsing)
