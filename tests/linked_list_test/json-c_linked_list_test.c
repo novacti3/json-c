@@ -23,9 +23,117 @@ IN THE SOFTWARE.
 #include <stdlib.h>
 
 #include <CuTest.h>
+#include "json-c_linked_list.h"
+
+// Forward declarations of methods
+// that will test the functionality
+// of each aspect of the linked lists
+
+void TestListCreate(CuTest *test);
+
+void TestListInsert(CuTest *test);
+void TestListRemove(CuTest *test);
+
+void TestListAt(CuTest *test);
+void TestListContains(CuTest *test);
+
+void TestListPushFront(CuTest *test);
+void TestListPopFront(CuTest *test);
+
+void TestListPushBack(CuTest *test);
+void TestListPopBack(CuTest *test);
+
+void TestListToArray(CuTest *test);
+
+void TestListFree(CuTest *test);
 
 int main()
 {
-    printf("Hello world\n");
-    return EXIT_SUCCESS;
+    CuSuite *suite = CuSuiteNew();
+    CuSuiteInit(suite);
+
+    // Create the tests
+    CuTest *testListCreate = CuTestNew("Create list", &TestListCreate);
+    
+    CuTest *testListInsert = CuTestNew("Insert into list", &TestListInsert);
+    CuTest *testListRemove = CuTestNew("Remove from list", &TestListRemove);
+    
+    CuTest *testListAt = CuTestNew("Get element at index", &TestListAt);
+    CuTest *testListContains = CuTestNew("List contains value", &TestListContains);
+    
+    CuTest *testListPushFront = CuTestNew("Push front", &TestListPushFront);
+    CuTest *testListPopFront = CuTestNew("Pop front", &TestListPopFront);
+
+    CuTest *testListPushBack = CuTestNew("Push back", &TestListPushBack);
+    CuTest *testListPopBack = CuTestNew("Pop back", &TestListPopBack);
+    
+    CuTest *testListToArray = CuTestNew("Convert list to array", &TestListToArray);
+
+    CuTest *testListFree = CuTestNew("Free List", &TestListFree);
+
+    // Add tests to suite
+    CuSuiteAdd(suite, testListCreate);
+
+    CuSuiteAdd(suite, testListInsert);
+    CuSuiteAdd(suite, testListRemove);
+
+    CuSuiteAdd(suite, testListAt);
+    CuSuiteAdd(suite, testListContains);
+    
+    CuSuiteAdd(suite, testListPushFront);
+    CuSuiteAdd(suite, testListPopFront);
+
+    CuSuiteAdd(suite, testListPushBack);
+    CuSuiteAdd(suite, testListPopBack);
+
+    CuSuiteAdd(suite, testListToArray);
+
+    CuSuiteAdd(suite, testListFree);
+
+    // Run the suite and retrieve the results
+    CuSuiteRun(suite);
+
+    CuString *summary = CuStringNew();
+    CuString *details = CuStringNew();
+    CuSuiteSummary(suite, summary);
+    CuSuiteDetails(suite, details);
+
+    // Print the results
+    printf(summary->buffer);
+    printf(details->buffer);
+
+    return (int)suite;
 };
+
+void TestListCreate(CuTest *test)
+{ 
+    JSONLinkedList *list = NULL;
+    
+    int createFuncResult = jsonLinkedListCreate(&list);
+    // Assert if list failed allocating
+    CuAssertIntEquals(test, 1, createFuncResult);
+    // Assert if the start of the list not empty
+    CuAssertPtrEquals(test, NULL, list->start);
+}
+
+void TestListInsert(CuTest *test){}
+void TestListRemove(CuTest *test){}
+
+void TestListAt(CuTest *test){}
+void TestListContains(CuTest *test){}
+
+void TestListPushFront(CuTest *test){}
+void TestListPopFront(CuTest *test){}
+
+void TestListPushBack(CuTest *test){}
+void TestListPopBack(CuTest *test){}
+
+void TestListToArray(CuTest *test){}
+
+void TestListFree(CuTest *test)
+{
+    JSONLinkedList *list = NULL;
+    jsonLinkedListCreate(&list);
+
+    jsonLinkedListFree(&list);
+}

@@ -36,3 +36,4 @@ target_include_directories(JSON-C_TEST_LINKED_LIST PRIVATE
     "${JSON-C_SOURCE_DIR}/include"
     "${JSON-C_SOURCE_DIR}/extern/CuTest"
 )
+target_sources(JSON-C_TEST_LINKED_LIST PRIVATE "${JSON-C_SOURCE_DIR}/extern/CuTest/CuTest.c")

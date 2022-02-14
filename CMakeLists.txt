@@ -83,6 +83,8 @@ set_target_properties(JSON-C PROPERTIES
 )
 
 add_compile_definitions(JSON_C_SERIALIZATION_COMPILED=1)
+# FIXME: As it stands right now, the user can include EVERY possible include. This clutters up IntelliSense and leads to confusion
+#        Figure out a way to let the user include only json-c.h
 target_include_directories(JSON-C PUBLIC ${CORE_INCLUDES} ${PARSER_INCLUDES} ${SERIALIZER_INCLUDES} ${DESERIALIZER_INCLUDES})
 target_sources(JSON-C 
     PRIVATE ${CORE_SOURCES} 

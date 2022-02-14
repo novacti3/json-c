@@ -24,6 +24,8 @@ IN THE SOFTWARE.
 int jsonLinkedListCreate(JSONLinkedList **list)
 {
     // Free the provided pointer to avoid memory leaks
+    // FIXME: Throws a segfault if a list ptr not set to NULL as default is passed in
+    //        While this is technically correct behaviour, it's absolutely shit from a usage perspective
     if(*list != NULL)
         jsonLinkedListFree(list);
     
