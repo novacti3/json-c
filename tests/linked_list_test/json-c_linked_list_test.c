@@ -25,6 +25,13 @@ IN THE SOFTWARE.
 #include <CuTest.h>
 #include "json-c_linked_list.h"
 
+// Set of constants to test against in all test cases
+
+static int VALUE_ONE = 5;
+static int VALUE_TWO = -4;
+static int VALUE_THREE = 0;
+
+
 // Forward declarations of methods
 // that will test the functionality
 // of each aspect of the linked lists
@@ -116,17 +123,94 @@ void TestListCreate(CuTest *test)
     CuAssertPtrEquals(test, NULL, list->start);
 }
 
-void TestListInsert(CuTest *test){}
+void TestListInsert(CuTest *test)
+{
+    JSONLinkedList *list = NULL;
+    jsonLinkedListCreate(&list);
+
+    // NOTE: Checks for the fail results might be great too
+
+    // Insert first value
+    jsonLinkedListInsert(&list, 0, &VALUE_ONE);
+    // Check if the size properly reflects the amount of nodes in the list
+    CuAssertIntEquals(test, 1, list->size);
+    // Check if the node got properly assigned as the start of the list
+    CuAssertPtrNotNull(test, list->start);
+    
+    // Value check
+    void *firstValuePtr;
+    jsonLinkedListAt(&list, 0, &firstValuePtr);
+    int firstValue = *((int*)firstValuePtr);
+    // Check if the retrieved value corresponds to the value that was supposed to be inserted
+    CuAssertIntEquals(test, VALUE_ONE, firstValue);
+
+    // Insert second value
+    jsonLinkedListInsert(&list, 1, &VALUE_TWO);
+    // Check if the size properly reflects the amount of nodes in the list
+    CuAssertIntEquals(test, 2, list->size);
+    // Check if the node got properly appended to the list
+    CuAssertPtrNotNull(test, list->start->next);
+    
+    // Value check
+    void *secondValuePtr;
+    jsonLinkedListAt(&list, 1, &secondValuePtr);
+    int secondValue = *((int*)secondValuePtr);
+    // Check if the retrieved value corresponds to the value that was supposed to be inserted
+    CuAssertIntEquals(test, VALUE_TWO, secondValue);
+
+    // Replace second value with other value
+    jsonLinkedListInsert(&list, 1, &VALUE_THREE);
+    // Check that the size didn't change because no new node was supposed to be appended to the list
+    CuAssertIntEquals(test, 2, list->size);
+    CuAssertPtrNotNull(test, list->start->next);
+    
+    // Value check
+    void *thirdValuePtr;
+    jsonLinkedListAt(&list, 1, &thirdValuePtr);
+    int thirdValue = *((int*)thirdValuePtr);
+    // Check that the retrieved value corresponds to the value that was supposed to replace the previous value
+    CuAssertIntEquals(test, VALUE_THREE, thirdValue);
+    // Check that no node was added to the list
+    CuAssertPtrEquals(test, NULL, list->start->next->next);
+}
 void TestListRemove(CuTest *test){}
 
-void TestListAt(CuTest *test){}
+void TestListAt(CuTest *test)
+{
+    JSONLinkedList *list = NULL;
+    jsonLinkedListCreate(&list);
+
+    // NOTE: Checks for the fail results might be great too
+
+    // Insert several values to the list so that something can actually be retrieved from it
+    jsonLinkedListInsert(&list, 0, &VALUE_ONE);
+    jsonLinkedListInsert(&list, 1, &VALUE_TWO);
+    jsonLinkedListInsert(&list, 2, &VALUE_THREE);
+
+    // Checks that all nodes got appended correctly
+    CuAssertIntEquals(test, 3, list->size);
+    CuAssertPtrEquals(test, NULL, list->start->next->next->next);
+
+    // Retrieve value
+    void *valPtr;
+    jsonLinkedListAt(&list, 2, &valPtr);
+    int val = *((int*)valPtr);
+    // Check that the value at the index is what was inserted
+    CuAssertIntEquals(test, VALUE_THREE, val);
+}
 void TestListContains(CuTest *test){}
 
 void TestListPushFront(CuTest *test){}
 void TestListPopFront(CuTest *test){}
 
-void TestListPushBack(CuTest *test){}
-void TestListPopBack(CuTest *test){}
+void TestListPushBack(CuTest *test)
+{
+    
+}
+void TestListPopBack(CuTest *test)
+{
+
+}
 
 void TestListToArray(CuTest *test){}
 

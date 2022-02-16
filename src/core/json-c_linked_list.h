@@ -67,7 +67,7 @@ Returns:
  0 -- value was NOT found
 -1 -- provided list is uninitialized
 */
-int jsonLinkedListContains(const JSONLinkedList* const list, void *value);
+int jsonLinkedListContains(JSONLinkedList** const list, void *value);
 
 /*
 Retrieves the value of a node at the provided index
@@ -76,7 +76,7 @@ Returns:
  0 -- node at the desired index doesn't exist,
 -1 -- provided list is uninitialized
 */
-int jsonLinkedListAt(const JSONLinkedList* const list, int index, const void* const outValue);
+int jsonLinkedListAt(JSONLinkedList** const list, int index, void** outValue);
 
 /*
 Inserts the specified value into a node at the desired index
@@ -85,7 +85,7 @@ Returns:
  0 -- failed inserting value
 -1 -- provided list is uninitialized
 */
-int jsonLinkedListInsert(JSONLinkedList* const list, int index, const void* const value);
+int jsonLinkedListInsert(JSONLinkedList** const list, int index, const void* const value);
 /*
 Removes and frees the node at the desired index
 Returns:
@@ -93,7 +93,7 @@ Returns:
  0 -- failed removing node
 -1 -- provided list is uninitialized
 */
-int jsonLinkedListRemove(JSONLinkedList* const list, int index);
+int jsonLinkedListRemove(JSONLinkedList** const list, int index);
 
 /*
 Inserts a value to the front of the list
@@ -102,7 +102,7 @@ Returns:
  0 -- failed inserting value
 -1 -- provided list is uninitialized
 */
-int jsonLinkedListPushFront(JSONLinkedList* const list, void** const value);
+int jsonLinkedListPushFront(JSONLinkedList** const list, void** const value);
 /*
 Removes the value at the beginning of the list
 Returns:
@@ -110,7 +110,7 @@ Returns:
  0 -- failed removing value
 -1 -- provided list is uninitialized
 */
-int jsonLinkedListPopFront(JSONLinkedList *list);
+int jsonLinkedListPopFront(JSONLinkedList** const list);
 
 /*
 Inserts a value to the end of the list
@@ -136,6 +136,6 @@ Returns:
  0 -- failed creating array
 -1 -- provided list is uninitialized
 */
-int jsonLinkedListToArray(const JSONLinkedList* const list, void* outArray);
+int jsonLinkedListToArray(JSONLinkedList** const list, void** outArray);
 
 #endif

@@ -21,6 +21,8 @@ IN THE SOFTWARE.
 
 #include <stdlib.h>
 
+#define IS_INDEX_OUT_OF_RANGE(i, max) (i < 0 || i >= max)
+
 int jsonLinkedListCreate(JSONLinkedList **list)
 {
     // Free the provided pointer to avoid memory leaks
@@ -83,29 +85,117 @@ int jsonLinkedListFree(JSONLinkedList **list)
         return 0;
 }
 
-int jsonLinkedListContains(const JSONLinkedList* const list, void *value)
+int jsonLinkedListContains(JSONLinkedList** const list, void *value)
 {
 
 }
 
-int jsonLinkedListAt(const JSONLinkedList* const list, int index, const void* const outValue)
+int jsonLinkedListAt(JSONLinkedList** const list, int index, void** outValue)
+{
+    JSONLinkedList* const linkedList = *list;
+
+    if(linkedList == NULL)
+        return -1;
+
+    if(!IS_INDEX_OUT_OF_RANGE(index, linkedList->size - 1))
+        return 0;
+
+    // Stores the node at the desired index in the list
+    // so that the specified value can be retrieved from it
+    JSONLinkedListNode** desiredNode = NULL;
+    
+    // Skip looping through the list if the index is 0
+    // because it's not necessarry seeing as 0 = start of list
+    if(index == 0)
+        desiredNode = &(linkedList->start);
+    else
+    {
+        for (size_t i = 0; i <= index; i++)
+        {
+            if(i == 0)
+                desiredNode = &(linkedList->start);
+            else
+                desiredNode = &(*desiredNode)->next;
+        }
+    }
+
+    if(*desiredNode == NULL)
+        return 0;
+    else
+        *outValue = (*desiredNode)->data;
+}
+int jsonLinkedListInsert(JSONLinkedList** const list, int index, const void* const value)
+{
+    JSONLinkedList *linkedList = *list;
+
+    if(linkedList == NULL)
+        return -1;
+
+    if(!IS_INDEX_OUT_OF_RANGE(index, linkedList->size - 1))
+        return 0;
+
+    // Stores the node at the desired index in the list
+    // so that the specified value can be inserted in it
+    JSONLinkedListNode **desiredNode = NULL;
+    
+    // Skip looping through the list if the index is 0
+    // because it's not necessarry seeing as 0 = start of list
+    if(index == 0)
+        desiredNode = &(linkedList->start);
+    else
+    {
+        for (size_t i = 0; i <= index; i++)
+        {
+            if(i == 0)
+                desiredNode = &(linkedList->start);
+            else
+                desiredNode = &(*desiredNode)->next;
+        }
+    }
+
+    // Just replace the value of the node if a JSONLinkedListNode
+    // is already present at the given index
+    if(*desiredNode != NULL)
+    {
+        // NOTE: Could not freeing the value here lead to a mem leak?
+        (*desiredNode)->data = value;
+    }   
+    // Otherwise create a new JSONLinkedListNode
+    else
+    {
+        JSONLinkedListNode *newNode = (JSONLinkedListNode*)malloc(sizeof(JSONLinkedListNode));
+        // Only append the new node if it was able to be allocated
+        if(newNode == NULL)
+        {
+            free(newNode);
+            return 0;
+        }
+        newNode->data = value;
+        newNode->next = NULL;
+
+        // The start ptr is always NULL, so this check is needed to ensure 
+        // that the new node gets set as the new start pointer properly
+        if(*desiredNode == NULL)
+            *desiredNode = newNode;
+        else
+            (*desiredNode)->next = newNode;
+        
+        linkedList->size++;
+    } 
+
+    
+    return 1;    
+}
+int jsonLinkedListRemove(JSONLinkedList** const list, int index)
 {
 
 }
-int jsonLinkedListInsert(JSONLinkedList* const list, int index, const void* const value)
+
+int jsonLinkedListPushFront(JSONLinkedList** const list, void** const value)
 {
 
 }
-int jsonLinkedListRemove(JSONLinkedList* const list, int index)
-{
-
-}
-
-int jsonLinkedListPushFront(JSONLinkedList* const list, void** const value)
-{
-
-}
-int jsonLinkedListPopFront(JSONLinkedList *list)
+int jsonLinkedListPopFront(JSONLinkedList **list)
 {
 
 }
@@ -183,7 +273,7 @@ int jsonLinkedListPopBack(JSONLinkedList** const list)
     return 1;    
 }
 
-int jsonLinkedListToArray(const JSONLinkedList* const list, void* outArray)
+int jsonLinkedListToArray(JSONLinkedList** const list, void** outArray)
 {
     
 }
