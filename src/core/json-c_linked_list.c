@@ -191,7 +191,7 @@ int jsonLinkedListRemove(JSONLinkedList** const list, int index)
 
 }
 
-int jsonLinkedListPushFront(JSONLinkedList** const list, void** const value)
+int jsonLinkedListPushFront(JSONLinkedList** const list, void* const value)
 {
 
 }
@@ -200,7 +200,7 @@ int jsonLinkedListPopFront(JSONLinkedList **list)
 
 }
 
-int jsonLinkedListPushBack(JSONLinkedList** const list, void** const value)
+int jsonLinkedListPushBack(JSONLinkedList** const list, void* const value)
 {
     JSONLinkedList *linkedList = *list;
     if(linkedList == NULL)
@@ -231,7 +231,7 @@ int jsonLinkedListPushBack(JSONLinkedList** const list, void** const value)
         free(newNode);
         return 0;
     }
-    newNode->data = *value;
+    newNode->data = value;
     newNode->next = NULL;
 
     // The start ptr is always NULL, so this check is needed to ensure 

@@ -76,6 +76,7 @@ Returns:
  0 -- node at the desired index doesn't exist,
 -1 -- provided list is uninitialized
 */
+// TODO: Macro-ify this so that the value is usable from the get-go and doesn't have to be casted from void*
 int jsonLinkedListAt(JSONLinkedList** const list, int index, void** outValue);
 
 /*
@@ -102,7 +103,7 @@ Returns:
  0 -- failed inserting value
 -1 -- provided list is uninitialized
 */
-int jsonLinkedListPushFront(JSONLinkedList** const list, void** const value);
+int jsonLinkedListPushFront(JSONLinkedList** const list, void* const value);
 /*
 Removes the value at the beginning of the list
 Returns:
@@ -119,7 +120,7 @@ Returns:
  0 -- failed inserting value
 -1 -- provided list is uninitialized
 */
-int jsonLinkedListPushBack(JSONLinkedList** const list, void** const value);
+int jsonLinkedListPushBack(JSONLinkedList** const list, void* const value);
 /*
 Removes the value at the end of the list
 Returns:

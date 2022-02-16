@@ -25,6 +25,11 @@ IN THE SOFTWARE.
 #include <CuTest.h>
 #include "json-c_linked_list.h"
 
+// Because having to write this code in EVERY SINGLE TEST CASE is, frankly, quite tedious
+#define CREATE_LIST(x) \
+JSONLinkedList* x = NULL; \
+jsonLinkedListCreate(&x); \
+
 // Set of constants to test against in all test cases
 
 static int VALUE_ONE = 5;
@@ -54,6 +59,7 @@ void TestListToArray(CuTest *test);
 
 void TestListFree(CuTest *test);
 
+// MAIN FUNC
 int main()
 {
     CuSuite *suite = CuSuiteNew();
@@ -112,10 +118,14 @@ int main()
     return (int)suite;
 };
 
+// TEST DEFINITIONS
+
 void TestListCreate(CuTest *test)
 { 
     JSONLinkedList *list = NULL;
     
+    // NOTE: Checks for the fail results might be great too
+
     int createFuncResult = jsonLinkedListCreate(&list);
     // Assert if list failed allocating
     CuAssertIntEquals(test, 1, createFuncResult);
@@ -125,8 +135,7 @@ void TestListCreate(CuTest *test)
 
 void TestListInsert(CuTest *test)
 {
-    JSONLinkedList *list = NULL;
-    jsonLinkedListCreate(&list);
+    CREATE_LIST(list);
 
     // NOTE: Checks for the fail results might be great too
 
@@ -177,8 +186,7 @@ void TestListRemove(CuTest *test){}
 
 void TestListAt(CuTest *test)
 {
-    JSONLinkedList *list = NULL;
-    jsonLinkedListCreate(&list);
+    CREATE_LIST(list);
 
     // NOTE: Checks for the fail results might be great too
 
@@ -205,11 +213,34 @@ void TestListPopFront(CuTest *test){}
 
 void TestListPushBack(CuTest *test)
 {
-    
+    CREATE_LIST(list);
+
+    jsonLinkedListPushBack(&list, &VALUE_ONE);
+    CuAssertIntEquals(test, 1, list->size);
+    CuAssertPtrNotNull(test, list->start);
+
+    jsonLinkedListPushBack(&list, &VALUE_TWO);
+    CuAssertIntEquals(test, 2, list->size);
+
+    jsonLinkedListPushBack(&list, &VALUE_THREE);
+    CuAssertIntEquals(test, 3, list->size);
+
+    void *valPtr;
+    jsonLinkedListAt(&list, 2, &valPtr);
+    int val = *((int*)valPtr);
 }
 void TestListPopBack(CuTest *test)
 {
+    CREATE_LIST(list);
 
+    jsonLinkedListPushBack(&list, &VALUE_ONE);
+    jsonLinkedListPushBack(&list, &VALUE_TWO);
+    jsonLinkedListPushBack(&list, &VALUE_THREE);
+    CuAssertIntEquals(test, 3, list->size);
+
+    jsonLinkedListPopBack(&list);
+    CuAssertIntEquals(test, 2, list->size);
+    CuAssertPtrEquals(test, NULL, list->start->next->next);
 }
 
 void TestListToArray(CuTest *test){}
