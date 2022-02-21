@@ -332,5 +332,10 @@ void TestListFree(CuTest *test)
     JSONLinkedList *list = NULL;
     jsonLinkedListCreate(&list);
 
+    jsonLinkedListPushBack(&list, &VALUE_ONE);
+    jsonLinkedListPushBack(&list, &VALUE_TWO);
+    jsonLinkedListPushBack(&list, &VALUE_THREE);
+
     jsonLinkedListFree(&list);
+    CuAssertPtrEquals(test, NULL, list);
 }
