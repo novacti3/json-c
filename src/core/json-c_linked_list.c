@@ -253,7 +253,37 @@ int jsonLinkedListRemove(JSONLinkedList** const list, int index)
 
 int jsonLinkedListPushFront(JSONLinkedList** const list, void* const value)
 {
-
+    JSONLinkedList *linkedList = *list;
+    if(linkedList == NULL)
+        return -1;
+    
+    // Create a new node from the provided value
+    JSONLinkedListNode *newNode = (JSONLinkedListNode*)malloc(sizeof(JSONLinkedListNode));
+    // Only append the new node if it was able to be allocated
+    if(newNode == NULL)
+    {
+        free(newNode);
+        return 0;
+    }
+    newNode->data = value;
+    newNode->next = NULL;
+    
+    // Replace the start node with a new node
+    // If the start is NULL, we can just set it to the new node directly
+    // because no sort of relinking the list is necessary
+    if(linkedList->start == NULL)
+        linkedList->start = newNode;
+    else
+    {
+        // Store the current start node
+        JSONLinkedListNode *oldStartNode = linkedList->start;
+        // Set the new start node's next ptr to the previous start node
+        linkedList->start = newNode;
+        newNode->next = oldStartNode;
+    }
+    
+    linkedList->size++;
+    return 1;    
 }
 int jsonLinkedListPopFront(JSONLinkedList **list)
 {
