@@ -304,7 +304,28 @@ void TestListPopBack(CuTest *test)
     CuAssertPtrEquals(test, NULL, list->start->next->next);
 }
 
-void TestListToArray(CuTest *test){}
+void TestListToArray(CuTest *test)
+{
+    CREATE_LIST(list);
+
+    jsonLinkedListPushBack(&list, &VALUE_ONE);
+    jsonLinkedListPushBack(&list, &VALUE_TWO);
+    jsonLinkedListPushBack(&list, &VALUE_THREE);
+
+    void **array = NULL;
+    jsonLinkedListToArray(&list, &array);
+
+    int values[] = 
+    { 
+        *((int*)array[0]), 
+        *((int*)array[1]), 
+        *((int*)array[2])
+    };
+
+    CuAssertIntEquals(test, VALUE_ONE, values[0]);
+    CuAssertIntEquals(test, VALUE_TWO, values[1]);
+    CuAssertIntEquals(test, VALUE_THREE, values[2]);
+}
 
 void TestListFree(CuTest *test)
 {

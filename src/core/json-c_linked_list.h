@@ -137,6 +137,6 @@ Returns:
  0 -- failed creating array
 -1 -- provided list is uninitialized
 */
-int jsonLinkedListToArray(JSONLinkedList** const list, void** outArray);
+int jsonLinkedListToArray(JSONLinkedList** const list, void*** outArray);
 
 #endif

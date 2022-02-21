@@ -406,7 +406,22 @@ int jsonLinkedListPopBack(JSONLinkedList** const list)
     return 1;    
 }
 
-int jsonLinkedListToArray(JSONLinkedList** const list, void** outArray)
+int jsonLinkedListToArray(JSONLinkedList** const list, void*** outArray)
 {
-    
+    JSONLinkedList *linkedList = *list;
+
+    void **array = (void**)malloc(linkedList->size * sizeof(void*));
+
+    JSONLinkedListNode **currentNode;
+    for (size_t i = 0; i < linkedList->size; i++)
+    {
+        if(i == 0)
+            currentNode = &(linkedList->start);
+        else
+            currentNode = &((*currentNode)->next);
+
+        array[i] = (*currentNode)->data;
+    }
+
+    *outArray = array;
 }
