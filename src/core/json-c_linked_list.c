@@ -287,7 +287,22 @@ int jsonLinkedListPushFront(JSONLinkedList** const list, void* const value)
 }
 int jsonLinkedListPopFront(JSONLinkedList **list)
 {
+    JSONLinkedList *linkedList = *list;
+    if(linkedList == NULL)
+        return -1;
 
+    if(linkedList->size == 0)
+        return 0;
+
+    JSONLinkedListNode *nextNode = linkedList->start->next;
+
+    free(linkedList->start->data);
+    free(linkedList->start);
+
+    linkedList->start = nextNode;
+
+    linkedList->size--;
+    return 1;
 }
 
 int jsonLinkedListPushBack(JSONLinkedList** const list, void* const value)

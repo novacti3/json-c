@@ -246,7 +246,21 @@ void TestListPushFront(CuTest *test)
     CuAssertPtrNotNull(test, list->start);
     CuAssertPtrNotNull(test, list->start->next);
 }
-void TestListPopFront(CuTest *test){}
+void TestListPopFront(CuTest *test)
+{
+    CREATE_LIST(list);
+
+    jsonLinkedListPushFront(&list, &VALUE_ONE);
+    jsonLinkedListPushFront(&list, &VALUE_TWO);
+    CuAssertIntEquals(test, 2, list->size);
+    CuAssertPtrNotNull(test, list->start);
+    CuAssertPtrNotNull(test, list->start->next);
+
+    jsonLinkedListPopFront(&list);
+    CuAssertIntEquals(test, 1, list->size);
+    CuAssertPtrNotNull(test, list->start);
+    CuAssertPtrEquals(test, NULL, list->start->next);
+}
 
 void TestListPushBack(CuTest *test)
 {
