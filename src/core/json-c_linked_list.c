@@ -87,7 +87,35 @@ int jsonLinkedListFree(JSONLinkedList **list)
 
 int jsonLinkedListContains(JSONLinkedList** const list, void *value)
 {
+    JSONLinkedList* const linkedList = *list;
+    if(linkedList == NULL)
+        return -1;
 
+    if(linkedList->size == 0)
+        return 0;
+
+    // No need to loop through the list if there's only one element in it
+    if(linkedList->size == 1)
+        return linkedList->start->data == value;
+    else
+    {
+        // Save the current node so that the value ptrs can be compared
+        JSONLinkedListNode **currentNode;
+        for (size_t i = 0; i <= linkedList->size; i++)
+        {
+            if(i == 0)
+                currentNode = &(linkedList->start);
+            else
+                currentNode = &((*currentNode)->next);
+
+            if(*currentNode == NULL) 
+                break; 
+            else
+                return (*currentNode)->data == value;
+        }
+    }
+
+    return 0;
 }
 
 int jsonLinkedListAt(JSONLinkedList** const list, int index, void** outValue)

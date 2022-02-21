@@ -230,7 +230,17 @@ void TestListAt(CuTest *test)
     // Check that the value at the index is what was inserted
     CuAssertIntEquals(test, VALUE_THREE, val);
 }
-void TestListContains(CuTest *test){}
+void TestListContains(CuTest *test)
+{
+    CREATE_LIST(list);
+
+    jsonLinkedListPushFront(&list, &VALUE_ONE);
+    CuAssertIntEquals(test, 1, jsonLinkedListContains(&list, &VALUE_ONE));
+
+    jsonLinkedListPushFront(&list, &VALUE_TWO);
+    CuAssertIntEquals(test, 1, jsonLinkedListContains(&list, &VALUE_TWO));
+    CuAssertIntEquals(test, 0, jsonLinkedListContains(&list, &VALUE_THREE));
+}
 
 void TestListPushFront(CuTest *test)
 {
