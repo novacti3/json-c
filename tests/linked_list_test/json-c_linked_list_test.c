@@ -182,7 +182,31 @@ void TestListInsert(CuTest *test)
     // Check that no node was added to the list
     CuAssertPtrEquals(test, NULL, list->start->next->next);
 }
-void TestListRemove(CuTest *test){}
+void TestListRemove(CuTest *test)
+{
+    CREATE_LIST(list);
+
+    // Insert several values to the list so that something can actually be removed
+    jsonLinkedListPushBack(&list, &VALUE_ONE);
+    CuAssertIntEquals(test, 1, list->size);
+    CuAssertPtrNotNull(test, list->start);
+
+    jsonLinkedListRemove(&list, 0);
+    CuAssertIntEquals(test, 0, list->size);
+    CuAssertPtrEquals(test, NULL, list->start);
+
+    jsonLinkedListPushBack(&list, &VALUE_TWO);
+    jsonLinkedListPushBack(&list, &VALUE_THREE);
+    CuAssertIntEquals(test, 2, list->size);
+    CuAssertPtrNotNull(test, list->start);
+    CuAssertPtrNotNull(test, list->start->next);
+    CuAssertPtrEquals(test, NULL, list->start->next->next);
+
+    jsonLinkedListRemove(&list, 1);
+    CuAssertIntEquals(test, 1, list->size);
+    CuAssertPtrNotNull(test, list->start);
+    CuAssertPtrEquals(test, NULL, list->start->next);
+}
 
 void TestListAt(CuTest *test)
 {
@@ -191,9 +215,9 @@ void TestListAt(CuTest *test)
     // NOTE: Checks for the fail results might be great too
 
     // Insert several values to the list so that something can actually be retrieved from it
-    jsonLinkedListInsert(&list, 0, &VALUE_ONE);
-    jsonLinkedListInsert(&list, 1, &VALUE_TWO);
-    jsonLinkedListInsert(&list, 2, &VALUE_THREE);
+    jsonLinkedListPushBack(&list, &VALUE_ONE);
+    jsonLinkedListPushBack(&list, &VALUE_TWO);
+    jsonLinkedListPushBack(&list, &VALUE_THREE);
 
     // Checks that all nodes got appended correctly
     CuAssertIntEquals(test, 3, list->size);

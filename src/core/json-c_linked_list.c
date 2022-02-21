@@ -188,7 +188,67 @@ int jsonLinkedListInsert(JSONLinkedList** const list, int index, const void* con
 }
 int jsonLinkedListRemove(JSONLinkedList** const list, int index)
 {
+    JSONLinkedList *linkedList = *list;
 
+    if(linkedList == NULL)
+        return -1;
+
+    if(!IS_INDEX_OUT_OF_RANGE(index, linkedList->size - 1))
+        return 0;
+
+    // Stores the node at the desired index in the list
+    // so that it can be removed later
+    JSONLinkedListNode **desiredNode = NULL;
+    // The node before the one that's to be freed
+    // Used to relink the whole list and keep it intact
+    JSONLinkedListNode **lastNode = NULL;
+    
+    // Skip looping through the list if the index is 0
+    // because it's not necessarry seeing as 0 = start of list
+    if(index == 0)
+    {
+        desiredNode = &(linkedList->start);
+    }
+    else
+    {
+        for (size_t i = 0; i <= index; i++)
+        {
+            if(i == 0)
+                desiredNode = &(linkedList->start);
+            else
+            {
+                lastNode = desiredNode;
+                desiredNode = &(*desiredNode)->next;
+            }
+        }
+    }
+
+    // Attempting to free a NULL ptr would lead to an error
+    if(*desiredNode == NULL)
+        return 0;
+    else
+    {
+        JSONLinkedListNode *nextNode = (*desiredNode)->next;
+        
+        free((*desiredNode)->data);
+        free((*desiredNode));
+
+        // Make sure to replace the start node with the next node
+        // if the index is 0
+        if(index == 0)
+        {
+            linkedList->start = nextNode;
+        }
+        // If it's not 0, make the last node point to the about-to-be-removed's next node
+        else
+        {
+            (*lastNode)->next = nextNode;
+        }
+
+        
+        linkedList->size--;
+        return 1;
+    }
 }
 
 int jsonLinkedListPushFront(JSONLinkedList** const list, void* const value)
