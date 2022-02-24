@@ -147,9 +147,8 @@ void TestListInsert(CuTest *test)
     CuAssertPtrNotNull(test, list->start);
     
     // Value check
-    void *firstValuePtr;
-    jsonLinkedListAt(&list, 0, &firstValuePtr);
-    int firstValue = *((int*)firstValuePtr);
+    int firstValue;
+    jsonLinkedListAt(&list, 0, firstValue, int);
     // Check if the retrieved value corresponds to the value that was supposed to be inserted
     CuAssertIntEquals(test, VALUE_ONE, firstValue);
 
@@ -161,9 +160,8 @@ void TestListInsert(CuTest *test)
     CuAssertPtrNotNull(test, list->start->next);
     
     // Value check
-    void *secondValuePtr;
-    jsonLinkedListAt(&list, 1, &secondValuePtr);
-    int secondValue = *((int*)secondValuePtr);
+    int secondValue;
+    jsonLinkedListAt(&list, 1, secondValue, int);
     // Check if the retrieved value corresponds to the value that was supposed to be inserted
     CuAssertIntEquals(test, VALUE_TWO, secondValue);
 
@@ -174,9 +172,8 @@ void TestListInsert(CuTest *test)
     CuAssertPtrNotNull(test, list->start->next);
     
     // Value check
-    void *thirdValuePtr;
-    jsonLinkedListAt(&list, 1, &thirdValuePtr);
-    int thirdValue = *((int*)thirdValuePtr);
+    int thirdValue;
+    jsonLinkedListAt(&list, 2, thirdValue, int);
     // Check that the retrieved value corresponds to the value that was supposed to replace the previous value
     CuAssertIntEquals(test, VALUE_THREE, thirdValue);
     // Check that no node was added to the list
@@ -224,9 +221,8 @@ void TestListAt(CuTest *test)
     CuAssertPtrEquals(test, NULL, list->start->next->next->next);
 
     // Retrieve value
-    void *valPtr;
-    jsonLinkedListAt(&list, 2, &valPtr);
-    int val = *((int*)valPtr);
+    int val;
+    jsonLinkedListAt(&list, 2, val, int);
     // Check that the value at the index is what was inserted
     CuAssertIntEquals(test, VALUE_THREE, val);
 }
@@ -286,9 +282,8 @@ void TestListPushBack(CuTest *test)
     jsonLinkedListPushBack(&list, &VALUE_THREE);
     CuAssertIntEquals(test, 3, list->size);
 
-    void *valPtr;
-    jsonLinkedListAt(&list, 2, &valPtr);
-    int val = *((int*)valPtr);
+    int val;
+    jsonLinkedListAt(&list, 2, val, int);
 }
 void TestListPopBack(CuTest *test)
 {

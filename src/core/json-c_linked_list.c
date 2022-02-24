@@ -21,7 +21,7 @@ IN THE SOFTWARE.
 
 #include <stdlib.h>
 
-#define IS_INDEX_OUT_OF_RANGE(i, max) (i < 0 || i >= max)
+#define IS_INDEX_OUT_OF_RANGE(i, max) (i < 0 || (i > max && i != 0))
 
 int jsonLinkedListCreate(JSONLinkedList **list)
 {
@@ -118,14 +118,14 @@ int jsonLinkedListContains(JSONLinkedList** const list, void *value)
     return 0;
 }
 
-int jsonLinkedListAt(JSONLinkedList** const list, int index, void** outValue)
+int _jsonLinkedListAt(JSONLinkedList** const list, int index, void** outValue)
 {
     JSONLinkedList* const linkedList = *list;
 
     if(linkedList == NULL)
         return -1;
 
-    if(!IS_INDEX_OUT_OF_RANGE(index, linkedList->size - 1))
+    if(IS_INDEX_OUT_OF_RANGE(index, linkedList->size - 1))
         return 0;
 
     // Stores the node at the desired index in the list
@@ -159,7 +159,7 @@ int jsonLinkedListInsert(JSONLinkedList** const list, int index, const void* con
     if(linkedList == NULL)
         return -1;
 
-    if(!IS_INDEX_OUT_OF_RANGE(index, linkedList->size - 1))
+    if(IS_INDEX_OUT_OF_RANGE(index, linkedList->size - 1))
         return 0;
 
     // Stores the node at the desired index in the list
@@ -221,7 +221,7 @@ int jsonLinkedListRemove(JSONLinkedList** const list, int index)
     if(linkedList == NULL)
         return -1;
 
-    if(!IS_INDEX_OUT_OF_RANGE(index, linkedList->size - 1))
+    if(IS_INDEX_OUT_OF_RANGE(index, linkedList->size - 1))
         return 0;
 
     // Stores the node at the desired index in the list

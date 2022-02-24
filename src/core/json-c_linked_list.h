@@ -77,7 +77,13 @@ Returns:
 -1 -- provided list is uninitialized
 */
 // TODO: Macro-ify this so that the value is usable from the get-go and doesn't have to be casted from void*
-int jsonLinkedListAt(JSONLinkedList** const list, int index, void** outValue);
+int _jsonLinkedListAt(JSONLinkedList** const list, int index, void** outValue);
+#define jsonLinkedListAt(list, index, outValue, T) \
+{ \
+    void* temp = NULL; \
+    _jsonLinkedListAt(list, index, &temp); \
+    outValue = *((T*)temp); \
+} \
 
 /*
 Inserts the specified value into a node at the desired index
