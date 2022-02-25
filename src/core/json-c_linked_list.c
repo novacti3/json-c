@@ -21,15 +21,17 @@ IN THE SOFTWARE.
 
 #include <stdlib.h>
 
+// Macro to quickly determine if the index fits within the list's bounds
+// The max value must be specified as list->size - 1 (for clarity in code)
 #define IS_INDEX_OUT_OF_RANGE(i, max) (i < 0 || (i > max && i != 0))
 
-int jsonLinkedListCreate(JSONLinkedList **list)
+int jsonLinkedListCreate(JSONLinkedList **listPtrPtr)
 {
     // Free the provided pointer to avoid memory leaks
-    // FIXME: Throws a segfault if a list ptr not set to NULL as default is passed in
+    // NOTE: Throws a segfault if a list ptr not set to NULL as default is passed in
     //        While this is technically correct behaviour, it's absolutely shit from a usage perspective
-    if(*list != NULL)
-        jsonLinkedListFree(list);
+    if(*listPtrPtr != NULL)
+        jsonLinkedListFree(listPtrPtr);
     
     JSONLinkedList *newList = (JSONLinkedList*)malloc(sizeof(JSONLinkedList));
     
@@ -39,19 +41,19 @@ int jsonLinkedListCreate(JSONLinkedList **list)
     newList->size = 0;
     newList->start = NULL;
 
-    *list = newList;
+    *listPtrPtr = newList;
     return 1;
 }
-int jsonLinkedListFree(JSONLinkedList **list)
+int jsonLinkedListFree(JSONLinkedList **listPtrPtr)
 {
-    JSONLinkedList *listToDelete = *list;
-    if(listToDelete == NULL)
+    JSONLinkedList *list = *listPtrPtr;
+    if(list == NULL)
         return -1;
 
     // Stores the next node in the list so that it doesn't get lost
     // once the current node gets freed
     JSONLinkedListNode *nextNode = NULL;
-    for (size_t i = 0; i < listToDelete->size; i++)
+    for (size_t i = 0; i < list->size; i++)
     {
         // Holds the pointer to the current node of the list
         JSONLinkedListNode *currentNode = NULL;
@@ -59,7 +61,7 @@ int jsonLinkedListFree(JSONLinkedList **list)
         // Ensures that the first iteration gets set to the 'start' pointer of JSONLinkedList
         if(i == 0)
         {
-            currentNode = listToDelete->start; 
+            currentNode = list->start; 
             nextNode = currentNode->next;
         }
         // Every other iteration should set the currentNode to the next node from the previous iteration
@@ -73,38 +75,38 @@ int jsonLinkedListFree(JSONLinkedList **list)
         free(currentNode->data);
         free(currentNode);
     }
-    free(listToDelete);
-    listToDelete = NULL;
+    free(list);
+    list = NULL;
 
-    if(listToDelete == NULL)
+    if(list == NULL)
     {
-        *list = listToDelete;
+        *listPtrPtr = list;
         return 1;
     }
     else
         return 0;
 }
 
-int jsonLinkedListContains(JSONLinkedList** const list, void *value)
+int jsonLinkedListContains(JSONLinkedList** const listPtrPtr, void *value)
 {
-    JSONLinkedList* const linkedList = *list;
-    if(linkedList == NULL)
+    JSONLinkedList* const list = *listPtrPtr;
+    if(list == NULL)
         return -1;
 
-    if(linkedList->size == 0)
+    if(list->size == 0)
         return 0;
 
     // No need to loop through the list if there's only one element in it
-    if(linkedList->size == 1)
-        return linkedList->start->data == value;
+    if(list->size == 1)
+        return list->start->data == value;
     else
     {
         // Save the current node so that the value ptrs can be compared
         JSONLinkedListNode **currentNode;
-        for (size_t i = 0; i <= linkedList->size; i++)
+        for (size_t i = 0; i <= list->size; i++)
         {
             if(i == 0)
-                currentNode = &(linkedList->start);
+                currentNode = &(list->start);
             else
                 currentNode = &((*currentNode)->next);
 
@@ -118,14 +120,14 @@ int jsonLinkedListContains(JSONLinkedList** const list, void *value)
     return 0;
 }
 
-int _jsonLinkedListAt(JSONLinkedList** const list, int index, void** outValue)
+int _jsonLinkedListAt(JSONLinkedList** const listPtrPtr, int index, void** outValue)
 {
-    JSONLinkedList* const linkedList = *list;
+    JSONLinkedList* const list = *listPtrPtr;
 
-    if(linkedList == NULL)
+    if(list == NULL)
         return -1;
 
-    if(IS_INDEX_OUT_OF_RANGE(index, linkedList->size - 1))
+    if(IS_INDEX_OUT_OF_RANGE(index, list->size - 1))
         return 0;
 
     // Stores the node at the desired index in the list
@@ -135,13 +137,13 @@ int _jsonLinkedListAt(JSONLinkedList** const list, int index, void** outValue)
     // Skip looping through the list if the index is 0
     // because it's not necessarry seeing as 0 = start of list
     if(index == 0)
-        desiredNode = &(linkedList->start);
+        desiredNode = &(list->start);
     else
     {
         for (size_t i = 0; i <= index; i++)
         {
             if(i == 0)
-                desiredNode = &(linkedList->start);
+                desiredNode = &(list->start);
             else
                 desiredNode = &(*desiredNode)->next;
         }
@@ -152,14 +154,14 @@ int _jsonLinkedListAt(JSONLinkedList** const list, int index, void** outValue)
     else
         *outValue = (*desiredNode)->data;
 }
-int jsonLinkedListInsert(JSONLinkedList** const list, int index, const void* const value)
+int jsonLinkedListInsert(JSONLinkedList** const listPtrPtr, int index, const void* const value)
 {
-    JSONLinkedList *linkedList = *list;
+    JSONLinkedList *list = *listPtrPtr;
 
-    if(linkedList == NULL)
+    if(list == NULL)
         return -1;
 
-    if(IS_INDEX_OUT_OF_RANGE(index, linkedList->size - 1))
+    if(IS_INDEX_OUT_OF_RANGE(index, list->size - 1))
         return 0;
 
     // Stores the node at the desired index in the list
@@ -169,13 +171,13 @@ int jsonLinkedListInsert(JSONLinkedList** const list, int index, const void* con
     // Skip looping through the list if the index is 0
     // because it's not necessarry seeing as 0 = start of list
     if(index == 0)
-        desiredNode = &(linkedList->start);
+        desiredNode = &(list->start);
     else
     {
         for (size_t i = 0; i <= index; i++)
         {
             if(i == 0)
-                desiredNode = &(linkedList->start);
+                desiredNode = &(list->start);
             else
                 desiredNode = &(*desiredNode)->next;
         }
@@ -208,20 +210,20 @@ int jsonLinkedListInsert(JSONLinkedList** const list, int index, const void* con
         else
             (*desiredNode)->next = newNode;
         
-        linkedList->size++;
+        list->size++;
     } 
 
     
     return 1;    
 }
-int jsonLinkedListRemove(JSONLinkedList** const list, int index)
+int jsonLinkedListRemove(JSONLinkedList** const listPtrPtr, int index)
 {
-    JSONLinkedList *linkedList = *list;
+    JSONLinkedList *list = *listPtrPtr;
 
-    if(linkedList == NULL)
+    if(list == NULL)
         return -1;
 
-    if(IS_INDEX_OUT_OF_RANGE(index, linkedList->size - 1))
+    if(IS_INDEX_OUT_OF_RANGE(index, list->size - 1))
         return 0;
 
     // Stores the node at the desired index in the list
@@ -235,14 +237,14 @@ int jsonLinkedListRemove(JSONLinkedList** const list, int index)
     // because it's not necessarry seeing as 0 = start of list
     if(index == 0)
     {
-        desiredNode = &(linkedList->start);
+        desiredNode = &(list->start);
     }
     else
     {
         for (size_t i = 0; i <= index; i++)
         {
             if(i == 0)
-                desiredNode = &(linkedList->start);
+                desiredNode = &(list->start);
             else
             {
                 lastNode = desiredNode;
@@ -265,7 +267,7 @@ int jsonLinkedListRemove(JSONLinkedList** const list, int index)
         // if the index is 0
         if(index == 0)
         {
-            linkedList->start = nextNode;
+            list->start = nextNode;
         }
         // If it's not 0, make the last node point to the about-to-be-removed's next node
         else
@@ -274,15 +276,15 @@ int jsonLinkedListRemove(JSONLinkedList** const list, int index)
         }
 
         
-        linkedList->size--;
+        list->size--;
         return 1;
     }
 }
 
-int jsonLinkedListPushFront(JSONLinkedList** const list, void* const value)
+int jsonLinkedListPushFront(JSONLinkedList** const listPtrPtr, void* const value)
 {
-    JSONLinkedList *linkedList = *list;
-    if(linkedList == NULL)
+    JSONLinkedList *list = *listPtrPtr;
+    if(list == NULL)
         return -1;
     
     // Create a new node from the provided value
@@ -299,59 +301,59 @@ int jsonLinkedListPushFront(JSONLinkedList** const list, void* const value)
     // Replace the start node with a new node
     // If the start is NULL, we can just set it to the new node directly
     // because no sort of relinking the list is necessary
-    if(linkedList->start == NULL)
-        linkedList->start = newNode;
+    if(list->start == NULL)
+        list->start = newNode;
     else
     {
         // Store the current start node
-        JSONLinkedListNode *oldStartNode = linkedList->start;
+        JSONLinkedListNode *oldStartNode = list->start;
         // Set the new start node's next ptr to the previous start node
-        linkedList->start = newNode;
+        list->start = newNode;
         newNode->next = oldStartNode;
     }
     
-    linkedList->size++;
+    list->size++;
     return 1;    
 }
-int jsonLinkedListPopFront(JSONLinkedList **list)
+int jsonLinkedListPopFront(JSONLinkedList **listPtrPtr)
 {
-    JSONLinkedList *linkedList = *list;
-    if(linkedList == NULL)
+    JSONLinkedList *list = *listPtrPtr;
+    if(list == NULL)
         return -1;
 
-    if(linkedList->size == 0)
+    if(list->size == 0)
         return 0;
 
-    JSONLinkedListNode *nextNode = linkedList->start->next;
+    JSONLinkedListNode *nextNode = list->start->next;
 
-    free(linkedList->start->data);
-    free(linkedList->start);
+    free(list->start->data);
+    free(list->start);
 
-    linkedList->start = nextNode;
+    list->start = nextNode;
 
-    linkedList->size--;
+    list->size--;
     return 1;
 }
 
-int jsonLinkedListPushBack(JSONLinkedList** const list, void* const value)
+int jsonLinkedListPushBack(JSONLinkedList** const listPtrPtr, void* const value)
 {
-    JSONLinkedList *linkedList = *list;
-    if(linkedList == NULL)
+    JSONLinkedList *list = *listPtrPtr;
+    if(list == NULL)
         return -1;
     
     // Stores the last node of the list so that a new node can be placed after it
     JSONLinkedListNode **lastNode = NULL;
     // The last node is the start node of the list if the list is empty
-    if(linkedList->size == 0)
-        lastNode = &(linkedList->start);
+    if(list->size == 0)
+        lastNode = &(list->start);
     // Otherwise the last node has to be reached by going through each node
     // and setting the last node as the current last node's 'next' ptr
     else
     {
-        for (size_t i = 0; i < linkedList->size; i++)
+        for (size_t i = 0; i < list->size; i++)
         {
             if(i == 0)
-                lastNode = &(linkedList->start);
+                lastNode = &(list->start);
             else
                 lastNode = &(*lastNode)->next;
         }
@@ -374,25 +376,25 @@ int jsonLinkedListPushBack(JSONLinkedList** const list, void* const value)
     else
         (*lastNode)->next = newNode;
     
-    linkedList->size++;
+    list->size++;
     return 1;    
 }
-int jsonLinkedListPopBack(JSONLinkedList** const list)
+int jsonLinkedListPopBack(JSONLinkedList** const listPtrPtr)
 {
-    JSONLinkedList *linkedList = *list;
-    if(linkedList == NULL)
+    JSONLinkedList *list = *listPtrPtr;
+    if(list == NULL)
         return -1;
 
     // It doesn't make sense for an element to be removed from an empty list    
-    if(linkedList->size == 0)
+    if(list->size == 0)
         return 0;
 
     // Stores the last node of the list so that it can be removed later
     JSONLinkedListNode **lastNode = NULL;
-    for (size_t i = 0; i < linkedList->size; i++)
+    for (size_t i = 0; i < list->size; i++)
     {
         if(i == 0)
-            lastNode = &(linkedList->start);
+            lastNode = &(list->start);
         else
             lastNode = &(*lastNode)->next;
     }
@@ -402,21 +404,21 @@ int jsonLinkedListPopBack(JSONLinkedList** const list)
     free(*lastNode);
     *lastNode = NULL;  
     
-    linkedList->size--;
+    list->size--;
     return 1;    
 }
 
-int jsonLinkedListToArray(JSONLinkedList** const list, void*** outArray)
+int jsonLinkedListToArray(JSONLinkedList** const listPtrPtr, void*** outArray)
 {
-    JSONLinkedList *linkedList = *list;
+    JSONLinkedList *list = *listPtrPtr;
 
-    void **array = (void**)malloc(linkedList->size * sizeof(void*));
+    void **array = (void**)malloc(list->size * sizeof(void*));
 
     JSONLinkedListNode **currentNode;
-    for (size_t i = 0; i < linkedList->size; i++)
+    for (size_t i = 0; i < list->size; i++)
     {
         if(i == 0)
-            currentNode = &(linkedList->start);
+            currentNode = &(list->start);
         else
             currentNode = &((*currentNode)->next);
 

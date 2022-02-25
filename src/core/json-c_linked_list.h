@@ -46,11 +46,16 @@ If the provided list ptr is not NULL,
 the function frees the currently present list 
 and replaces the old list with an empty one
 
+THE PASSED IN LIST PTR MUST BE SET TO NULL WHEN FIRST DECLARING THE LIST VAR
+like so:
+JSONLinkedList *list = NULL;
+jsonCreateLinkedList(&list);
+
 Returns: 
 1 -- successfully allocated a new empty list
 0 -- allocation was unsuccessful
 */
-int jsonLinkedListCreate(JSONLinkedList **list);
+int jsonLinkedListCreate(JSONLinkedList **listPtrPtr);
 /*
 Frees the provided list and all of its nodes
 Returns: 
@@ -58,7 +63,7 @@ Returns:
  0 -- some nodes were not freed
 -1 -- provided list is uninitialized
 */
-int jsonLinkedListFree(JSONLinkedList **list);
+int jsonLinkedListFree(JSONLinkedList **listPtrPtr);
 
 /*
 Checks whether some node in the provided list contains the desired value
@@ -67,7 +72,7 @@ Returns:
  0 -- value was NOT found
 -1 -- provided list is uninitialized
 */
-int jsonLinkedListContains(JSONLinkedList** const list, void *value);
+int jsonLinkedListContains(JSONLinkedList** const listPtrPtr, void *value);
 
 /*
 Retrieves the value of a node at the provided index
@@ -76,12 +81,11 @@ Returns:
  0 -- node at the desired index doesn't exist,
 -1 -- provided list is uninitialized
 */
-// TODO: Macro-ify this so that the value is usable from the get-go and doesn't have to be casted from void*
-int _jsonLinkedListAt(JSONLinkedList** const list, int index, void** outValue);
-#define jsonLinkedListAt(list, index, outValue, T) \
+int _jsonLinkedListAt(JSONLinkedList** const listPtrPtr, int index, void** outValue);
+#define jsonLinkedListAt(listPtrPtr, index, outValue, T) \
 { \
     void* temp = NULL; \
-    _jsonLinkedListAt(list, index, &temp); \
+    _jsonLinkedListAt(listPtrPtr, index, &temp); \
     outValue = *((T*)temp); \
 } \
 
@@ -92,7 +96,7 @@ Returns:
  0 -- failed inserting value
 -1 -- provided list is uninitialized
 */
-int jsonLinkedListInsert(JSONLinkedList** const list, int index, const void* const value);
+int jsonLinkedListInsert(JSONLinkedList** const listPtrPtr, int index, const void* const value);
 /*
 Removes and frees the node at the desired index
 Returns:
@@ -100,7 +104,7 @@ Returns:
  0 -- failed removing node
 -1 -- provided list is uninitialized
 */
-int jsonLinkedListRemove(JSONLinkedList** const list, int index);
+int jsonLinkedListRemove(JSONLinkedList** const listPtrPtr, int index);
 
 /*
 Inserts a value to the front of the list
@@ -109,7 +113,7 @@ Returns:
  0 -- failed inserting value
 -1 -- provided list is uninitialized
 */
-int jsonLinkedListPushFront(JSONLinkedList** const list, void* const value);
+int jsonLinkedListPushFront(JSONLinkedList** const listPtrPtr, void* const value);
 /*
 Removes the value at the beginning of the list
 Returns:
@@ -117,7 +121,7 @@ Returns:
  0 -- failed removing value
 -1 -- provided list is uninitialized
 */
-int jsonLinkedListPopFront(JSONLinkedList** const list);
+int jsonLinkedListPopFront(JSONLinkedList** const listPtrPtr);
 
 /*
 Inserts a value to the end of the list
@@ -126,7 +130,7 @@ Returns:
  0 -- failed inserting value
 -1 -- provided list is uninitialized
 */
-int jsonLinkedListPushBack(JSONLinkedList** const list, void* const value);
+int jsonLinkedListPushBack(JSONLinkedList** const listPtrPtr, void* const value);
 /*
 Removes the value at the end of the list
 Returns:
@@ -134,7 +138,7 @@ Returns:
  0 -- failed removing value
 -1 -- provided list is uninitialized
 */
-int jsonLinkedListPopBack(JSONLinkedList** const list);
+int jsonLinkedListPopBack(JSONLinkedList** const listPtrPtr);
 
 /*
 Converts the list into a regular C-style array
@@ -143,6 +147,6 @@ Returns:
  0 -- failed creating array
 -1 -- provided list is uninitialized
 */
-int jsonLinkedListToArray(JSONLinkedList** const list, void*** outArray);
+int jsonLinkedListToArray(JSONLinkedList** const listPtrPtr, void*** outArray);
 
 #endif
