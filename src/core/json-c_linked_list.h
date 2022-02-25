@@ -58,12 +58,15 @@ Returns:
 int jsonLinkedListCreate(JSONLinkedList **listPtrPtr);
 /*
 Frees the provided list and all of its nodes
+
+If 'freeValues' parameter is set to 1, the values held by the list nodes will be freed as well
+
 Returns: 
  1 -- all nodes were freed correctly
  0 -- some nodes were not freed
 -1 -- provided list is uninitialized
 */
-int jsonLinkedListFree(JSONLinkedList **listPtrPtr);
+int jsonLinkedListFree(JSONLinkedList **listPtrPtr, int freeValues);
 
 /*
 Checks whether some node in the provided list contains the desired value
@@ -87,7 +90,7 @@ int _jsonLinkedListAt(JSONLinkedList** const listPtrPtr, int index, void** outVa
     void* temp = NULL; \
     _jsonLinkedListAt(listPtrPtr, index, &temp); \
     outValue = *((T*)temp); \
-} \
+}
 
 /*
 Inserts the specified value into a node at the desired index
@@ -96,7 +99,7 @@ Returns:
  0 -- failed inserting value
 -1 -- provided list is uninitialized
 */
-int jsonLinkedListInsert(JSONLinkedList** const listPtrPtr, int index, const void* const value);
+int jsonLinkedListInsert(JSONLinkedList** const listPtrPtr, int index, void* const value);
 /*
 Removes and frees the node at the desired index
 Returns:

@@ -31,7 +31,7 @@ int jsonLinkedListCreate(JSONLinkedList **listPtrPtr)
     // NOTE: Throws a segfault if a list ptr not set to NULL as default is passed in
     //        While this is technically correct behaviour, it's absolutely shit from a usage perspective
     if(*listPtrPtr != NULL)
-        jsonLinkedListFree(listPtrPtr);
+        jsonLinkedListFree(listPtrPtr, 1);
     
     JSONLinkedList *newList = (JSONLinkedList*)malloc(sizeof(JSONLinkedList));
     
@@ -44,7 +44,7 @@ int jsonLinkedListCreate(JSONLinkedList **listPtrPtr)
     *listPtrPtr = newList;
     return 1;
 }
-int jsonLinkedListFree(JSONLinkedList **listPtrPtr)
+int jsonLinkedListFree(JSONLinkedList **listPtrPtr, int freeValues)
 {
     JSONLinkedList *list = *listPtrPtr;
     if(list == NULL)
@@ -72,8 +72,13 @@ int jsonLinkedListFree(JSONLinkedList **listPtrPtr)
             nextNode = currentNode->next;
         }
         
-        free(currentNode->data);
+        if(freeValues == 1) 
+        {
+            free(currentNode->data);
+            currentNode->data = NULL;
+        }
         free(currentNode);
+        currentNode = NULL;
     }
     free(list);
     list = NULL;
@@ -154,7 +159,7 @@ int _jsonLinkedListAt(JSONLinkedList** const listPtrPtr, int index, void** outVa
     else
         *outValue = (*desiredNode)->data;
 }
-int jsonLinkedListInsert(JSONLinkedList** const listPtrPtr, int index, const void* const value)
+int jsonLinkedListInsert(JSONLinkedList** const listPtrPtr, int index, void* const value)
 {
     JSONLinkedList *list = *listPtrPtr;
 

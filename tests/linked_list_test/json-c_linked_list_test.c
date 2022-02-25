@@ -330,6 +330,9 @@ void TestListFree(CuTest *test)
     jsonLinkedListPushBack(&list, &VALUE_TWO);
     jsonLinkedListPushBack(&list, &VALUE_THREE);
 
-    jsonLinkedListFree(&list);
+    // NOTE: Asserts on whether or not the actual values were freed properly would be nice,
+    //       but implementing it has proven to be a challenge I do not have the time for right now
+    jsonLinkedListFree(&list, 1);
+
     CuAssertPtrEquals(test, NULL, list);
 }
