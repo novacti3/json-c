@@ -147,6 +147,12 @@ Returns:
  0 -- failed creating array
 -1 -- provided list is uninitialized
 */
-int jsonLinkedListToArray(JSONLinkedList** const listPtrPtr, void*** outArray);
+int _jsonLinkedListToArray(JSONLinkedList** const listPtrPtr, void*** outArray);
+#define jsonLinkedListToArray(listPtrPtr, outArray, T) \
+{ \
+    void **tempArray = NULL; \
+    _jsonLinkedListToArray(listPtrPtr, &tempArray); \
+    outArray = (T**)tempArray; \
+} \
 
 #endif

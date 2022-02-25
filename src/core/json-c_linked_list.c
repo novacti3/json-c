@@ -408,7 +408,7 @@ int jsonLinkedListPopBack(JSONLinkedList** const listPtrPtr)
     return 1;    
 }
 
-int jsonLinkedListToArray(JSONLinkedList** const listPtrPtr, void*** outArray)
+int _jsonLinkedListToArray(JSONLinkedList** const listPtrPtr, void*** outArray)
 {
     JSONLinkedList *list = *listPtrPtr;
 

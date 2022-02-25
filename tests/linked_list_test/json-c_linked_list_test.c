@@ -122,8 +122,7 @@ int main()
 
 void TestListCreate(CuTest *test)
 { 
-    // JSONLinkedList *list = NULL;
-    JSONLinkedList *list;
+    JSONLinkedList *list = NULL;
     
     // NOTE: Checks for the fail results might be great too
 
@@ -307,14 +306,14 @@ void TestListToArray(CuTest *test)
     jsonLinkedListPushBack(&list, &VALUE_TWO);
     jsonLinkedListPushBack(&list, &VALUE_THREE);
 
-    void **array = NULL;
-    jsonLinkedListToArray(&list, &array);
+    int **array = NULL;
+    jsonLinkedListToArray(&list, array, int);
 
     int values[] = 
     { 
-        *((int*)array[0]), 
-        *((int*)array[1]), 
-        *((int*)array[2])
+        *(array[0]), 
+        *(array[1]), 
+        *(array[2])
     };
 
     CuAssertIntEquals(test, VALUE_ONE, values[0]);
