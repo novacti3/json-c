@@ -49,6 +49,9 @@ int jsonLinkedListFree(JSONLinkedList **listPtrPtr, int freeValues)
     JSONLinkedList *list = *listPtrPtr;
     if(list == NULL)
         return -1;
+    // Trying to free nodes of an empty list leads to a segfault
+    if(list->size <= 0)
+        return 0;
 
     // Stores the next node in the list so that it doesn't get lost
     // once the current node gets freed

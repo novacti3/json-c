@@ -19,6 +19,8 @@ IN THE SOFTWARE.
 */
 #include "json-c_utils.h"
 
+#include "json-c_linked_list.h"
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -101,7 +103,8 @@ int _jsonSplitString(char ***dest, const char* const src, const char delim, int*
 {
     // Array of char*
     char **stringsArray = *dest;
-    int newStringsAmount = 0;
+    JSONLinkedList *stringsList = NULL;
+    jsonLinkedListCreate(&stringsList);
 
     // NOTE: Freeing here might actually goof up the keys and value ptrs
     //       in the previous JSONPairs, because it'd free them up. 
@@ -142,9 +145,6 @@ int _jsonSplitString(char ***dest, const char* const src, const char delim, int*
         int createStringFromEndOfLine = ((c == '\n' || c == '\0') && wasDelimEncountered);
         if(c == delim || createStringFromEndOfLine)
         {
-            if(stringsArray == NULL)
-                stringsArray = (char**)malloc(sizeof(char**));
-            
             wasDelimEncountered = 1;
             
             // Use this character as the end of the string that's currently being constructed
@@ -168,42 +168,7 @@ int _jsonSplitString(char ***dest, const char* const src, const char delim, int*
             // for null-termination char
             newString[newStringLength] = '\0';
 
-            if(newStringsAmount == 0)
-            {
-                // If it's the first new string, there isn't any need to allocate
-                // room for it, because it was already allocated when creating the new strings array
-                stringsArray[0] = newString;
-            }
-            else
-            {        
-                // If other strings have already been added, 
-                // the array needs to be grown to accomodate 
-                // for the newly created string
-                
-                // 1: Allocate a new array with +1 length than the current array
-                //    to accomodate for the new string
-                char **resizedStringsArray = (char**)malloc((newStringsAmount + 1) * sizeof(char*));
-                
-                // 2: Copy the contents of the current array into the resized array
-                memmove(resizedStringsArray, stringsArray, (newStringsAmount + 1) * sizeof(char*));
-                // 3: Add the new string as the last element of the new array
-                // NOTE: It's just newStringsAmount (not amount - 1 or +1)
-                //       because arrays are indexed from 0, therefore doing that
-                //       would lead to trying to assign to an address out of bounds
-                resizedStringsArray[newStringsAmount] = newString;
-
-                // NOTE: Freeing the entire old array causes all but the new string
-                //       to be garbage data because it frees the actual char*s containing
-                //       the string data. Needs investigation.
-                // 4: Free the old array because it's going to get replaced by the new one
-                // _jsonFreeStringArray(&stringsArray, &newStringsAmount);
-                free(stringsArray);
-
-                // 5: Replace the old array with the new resized one
-                stringsArray = resizedStringsArray;
-            }
-
-            newStringsAmount++;
+            jsonLinkedListPushBack(&stringsList, (void*)newString);
 
             newStringStartIndex = i + 1;
             newStringEndIndex = -1;
@@ -212,9 +177,19 @@ int _jsonSplitString(char ***dest, const char* const src, const char delim, int*
         i++;
     } while (c != '\0' && c != '\n');
 
+    int newStringsAmount = stringsList->size;
+    // Only convert the list to an array if it has some elements to begin with
+    if(newStringsAmount > 0)
+    {
+        jsonLinkedListToArray(&stringsList, stringsArray, char);
+        jsonLinkedListFree(&stringsList, 0);
+    }
+    else
+        stringsArray = NULL;
+    
     *dest = stringsArray;
     *numOfStrings = newStringsAmount;
-    if(newStringsAmount <= 0)    
+    if(newStringsAmount <= 0)
         return 0;
     else
         return 1;
