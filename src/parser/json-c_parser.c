@@ -89,9 +89,7 @@ int jsonParseFile(JSONParser *parser, const char *path)
             pair->key = key;
             pair->value = jsonValueStruct;
             
-            // TODO: Save pairs to the parser
             jsonLinkedListPushBack(&pairsList, (void*)(&pair));
-
             // Free the raw strings because they have been parsed and copied into new strings/values
             // Avoids a memory leak
             free((void*)rawKeyStr);
@@ -100,11 +98,18 @@ int jsonParseFile(JSONParser *parser, const char *path)
     }
     free(line);
     line = NULL;
-
-    jsonLinkedListPopBack(&pairsList);
-    jsonLinkedListFree(&pairsList);
-
+    
+    // End file parsing
     fclose(file);
+
+    // Convert the list of parsed key/value pairs into a regular C array
+    // to avoid forcing the user to use custom data types and to simplify
+    // key/value pair lookup
+    JSONPair **parsedPairs = 0;
+    jsonLinkedListToArray(&pairsList, parsedPairs, JSONPair);
+
+    // Save pairs to the parser
+    parser->pairs = parsedPairs;
     // TODO: Add checks whether everything has been parsed correctly. If not, return 0.
     return 1;
 }
@@ -137,7 +142,7 @@ static int _jsonParseValueString(const char** const str, JSONValue* const out)
     for (size_t i = 0; i < strlen(jsonString); i++)
     {
         // Judging by the first character in the string,
-        // we can determine what type of value we are talking about
+        // we can determine what type of value the pair holds
         // FIXME: Currently, if the first character is a whitespace, this whole code breaks
         //        Either pass in a string that's already free of them
         //        or figure out a way to ignore them
