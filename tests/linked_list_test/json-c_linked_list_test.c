@@ -219,11 +219,15 @@ void TestListAt(CuTest *test)
     CuAssertIntEquals(test, 3, list->size);
     CuAssertPtrEquals(test, NULL, list->start->next->next->next);
 
-    // Retrieve value
-    int val;
-    jsonLinkedListAt(&list, 2, val, int);
+    // Retrieve values
+    int val1, val2, val3;
+    jsonLinkedListAt(&list, 0, val1, int);
+    jsonLinkedListAt(&list, 1, val2, int);
+    jsonLinkedListAt(&list, 2, val3, int);
     // Check that the value at the index is what was inserted
-    CuAssertIntEquals(test, VALUE_THREE, val);
+    CuAssertIntEquals(test, VALUE_ONE, val1);
+    CuAssertIntEquals(test, VALUE_TWO, val2);
+    CuAssertIntEquals(test, VALUE_THREE, val3);
 }
 void TestListContains(CuTest *test)
 {
