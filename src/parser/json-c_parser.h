@@ -39,7 +39,7 @@ typedef struct JSONParser
 {
     char *filePath;
     int numOfPairs;
-    JSONPair *pairs;
+    JSONPair **pairs;
 } JSONParser;
 
 // Parses the provided file and stores all of the key/value pairs contained within
