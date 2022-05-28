@@ -21,13 +21,16 @@ IN THE SOFTWARE.
 
 #include "json-c_utils.h"
 #include "json-c_linked_list.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
 // Internal function forward declarations
+
 static char *_jsonPolishValueString(const char* const str, char **out, const int offsetFromStart, const int numOfCharsToOmit);
 static int _jsonParseValueString(const char** const str, JSONValue* const out);
+
 // --------------------
 
 int jsonParseFile(JSONParser *parser, const char *path)
@@ -39,7 +42,9 @@ int jsonParseFile(JSONParser *parser, const char *path)
         3.1: The first token is the key, the second token is the value string
         3.2: Parse the value string and turn it into a JSONValue struct
     4. Put the key and value into a JSONPair struct
-    5. Add this new pair into the parser's list of JSONPairs
+    5. Add this new pair into a list of JSONPairs
+    6. Convert the list of pairs into a regular C array
+    7. Save this array into the parser for use by the user
     */
 
     // 1. Open the file
@@ -51,7 +56,7 @@ int jsonParseFile(JSONParser *parser, const char *path)
     fseek(file, 0, SEEK_SET);
     
     // 2. Go through the file line by line
-    JSONLinkedList *pairsList;
+    JSONLinkedList *pairsList = NULL;
     jsonLinkedListCreate(&pairsList);
     
     char *line = NULL;
@@ -81,7 +86,7 @@ int jsonParseFile(JSONParser *parser, const char *path)
             // 3.2: Parse the value string and turn it into a JSONValue struct  
             JSONValue jsonValueStruct;
             _jsonParseValueString(&rawValueStr, &jsonValueStruct);
-            
+
             // 4. Put the key and value into a JSONPair struct
             // If a JSONObject or JSONArray are being parsed,
             // add the JSONValue struct to the pair once they are complete
@@ -89,27 +94,35 @@ int jsonParseFile(JSONParser *parser, const char *path)
             pair->key = key;
             pair->value = jsonValueStruct;
             
-            jsonLinkedListPushBack(&pairsList, (void*)(&pair));
+            // 5. Add this new pair into a list of JSONPairs
+            jsonLinkedListPushBack(&pairsList, (void*)pair);
+
             // Free the raw strings because they have been parsed and copied into new strings/values
             // Avoids a memory leak
+            // Explicit void* cast here to get rid of warning that 'const' modifier is being discarded
             free((void*)rawKeyStr);
             free((void*)rawValueStr);
+            // Free the current line because it's not needed anymore
+            free(line);
+            line = NULL;
         }
     }
     free(line);
     line = NULL;
     
-    // End file parsing
     fclose(file);
 
-    // Convert the list of parsed key/value pairs into a regular C array
-    // to avoid forcing the user to use custom data types and to simplify
-    // key/value pair lookup
-    JSONPair **parsedPairs = 0;
-    jsonLinkedListToArray(&pairsList, parsedPairs, JSONPair);
+    // 6. Convert the list of pairs into a regular C array
+    JSONPair **pairsArray = NULL;
+    jsonLinkedListToArray(&pairsList, pairsArray, JSONPair);
+    // 7. Save this array into the parser for use by the user
+    parser->pairs = pairsArray;
+    
+    // FIXME: MEMLEAK
+    //        Due to the fact that JSONPair contains a char* pointer, simply freeing the entire list
+    //        only frees the JSONPair pointer that contains it. The name needs to be freed as well, somewhere, somehow
+    jsonLinkedListFree(&pairsList, 0);
 
-    // Save pairs to the parser
-    parser->pairs = parsedPairs;
     // TODO: Add checks whether everything has been parsed correctly. If not, return 0.
     return 1;
 }
@@ -135,8 +148,10 @@ static char *_jsonPolishValueString(const char* const str, char** out, const int
     return polishedString;
 }
 
+// static int _jsonParseValueString(const char** const str, JSONValue** const val)
 static int _jsonParseValueString(const char** const str, JSONValue* const out)
 {
+    // JSONValue* out = *val;
     const char* const jsonString = *str;
     
     for (size_t i = 0; i < strlen(jsonString); i++)
