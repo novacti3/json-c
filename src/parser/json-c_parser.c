@@ -132,6 +132,7 @@ void jsonClearParser(JSONParser *parser)
 
 }
 
+// Utility function for removing X amount of characters from the start (+ specified offset) of the string
 static char *_jsonPolishValueString(const char* const str, char** out, const int offsetFromStart, const int numOfCharsToOmit)
 {
     int polishedStringLength = strlen(str) - numOfCharsToOmit;
@@ -148,10 +149,8 @@ static char *_jsonPolishValueString(const char* const str, char** out, const int
     return polishedString;
 }
 
-// static int _jsonParseValueString(const char** const str, JSONValue** const val)
 static int _jsonParseValueString(const char** const str, JSONValue* const out)
 {
-    // JSONValue* out = *val;
     const char* const jsonString = *str;
     
     for (size_t i = 0; i < strlen(jsonString); i++)
@@ -167,7 +166,10 @@ static int _jsonParseValueString(const char** const str, JSONValue* const out)
             {
                 // If the first character is n(ull),
                 // the value is guaranteed to be NULL
+                // If the value cannot be identified, 
+                // set the type to NULL as well
                 case 'n':
+                default:
                 {
                     out->type = JSON_VALUE_TYPE_NULL;
                     out->value = NULL;
