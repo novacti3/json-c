@@ -45,19 +45,4 @@ typedef struct JSONPair
     JSONValue value;
 } JSONPair;
 
-// Struct that represents a JSON object and all of its key/value pairs 
-// Used as the value ptr of JSONPair if JSONValueType is JSON_VALUE_TYPE_OBJECT
-typedef struct JSONObject
-{
-    JSONPair *pairs;
-} JSONObject;
-
-// Struct that represents a JSON array and holds the elements, their amount and type
-// Used as the value ptr of JSONPair if JSONValueType is JSON_VALUE_TYPE_ARRAY
-typedef struct JSONArray
-{
-    JSONValue *elements;
-    unsigned int length;
-} JSONArray;
-
 #endif

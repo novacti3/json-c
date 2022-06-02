@@ -19,8 +19,9 @@ IN THE SOFTWARE.
 */
 #include "json-c_parser.h"
 
-#include "json-c_utils.h"
+#include "json-c_types.h"
 #include "json-c_linked_list.h"
+#include "json-c_utils.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -55,10 +56,10 @@ int jsonParseFile(JSONParser *parser, const char *path)
     
     fseek(file, 0, SEEK_SET);
     
-    // 2. Go through the file line by line
-    JSONLinkedList *pairsList = NULL;
-    jsonLinkedListCreate(&pairsList);
+    JSONTree *parsedPairsTree = NULL;
+    jsonTreeCreate(&parsedPairsTree);
     
+    // 2. Go through the file line by line
     char *line = NULL;
     int lineLength = 0;
     char **splitLine = NULL;
@@ -94,8 +95,7 @@ int jsonParseFile(JSONParser *parser, const char *path)
             pair->key = key;
             pair->value = jsonValueStruct;
             
-            // 5. Add this new pair into a list of JSONPairs
-            jsonLinkedListPushBack(&pairsList, (void*)pair);
+            // TODO: Add pair to the tree
 
             // Free the raw strings because they have been parsed and copied into new strings/values
             // Avoids a memory leak
@@ -112,17 +112,8 @@ int jsonParseFile(JSONParser *parser, const char *path)
     
     fclose(file);
 
-    // 6. Convert the list of pairs into a regular C array
-    JSONPair **pairsArray = NULL;
-    jsonLinkedListToArray(&pairsList, pairsArray, JSONPair);
-    // 7. Save this array into the parser for use by the user
-    parser->pairs = pairsArray;
+    parser->pairs = parsedPairsTree;
     
-    // FIXME: MEMLEAK
-    //        Due to the fact that JSONPair contains a char* pointer, simply freeing the entire list
-    //        only frees the JSONPair pointer that contains it. The name needs to be freed as well, somewhere, somehow
-    jsonLinkedListFree(&pairsList, 0);
-
     // TODO: Add checks whether everything has been parsed correctly. If not, return 0.
     return 1;
 }

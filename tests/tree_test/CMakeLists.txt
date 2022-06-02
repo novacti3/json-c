@@ -18,7 +18,22 @@
 # IN THE SOFTWARE.
 cmake_minimum_required(VERSION 3.20)
 
-file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
+project(JSON-C_TEST_TREE DESCRIPTION "Unit test for the JSON-C library's tree implementation" LANGUAGES C)
 
-add_subdirectory(linked_list_test)
-add_subdirectory(tree_test)
+add_executable(JSON-C_TEST_TREE json-c_tree_test.c)
+
+set_target_properties(JSON-C_TEST_TREE PROPERTIES
+    C_STANDARD 11
+    C_STANDARD_REQUIRED 11
+    LINKER_LANGUAGE C
+
+    RUNTIME_OUTPUT_DIRECTORY "../bin"
+    OUTPUT_NAME "TreeTest"
+)
+
+target_link_libraries(JSON-C_TEST_TREE PRIVATE JSON-C)
+target_include_directories(JSON-C_TEST_TREE PRIVATE 
+    "${JSON-C_SOURCE_DIR}/include"
+    "${JSON-C_SOURCE_DIR}/extern/CuTest"
+)
+target_sources(JSON-C_TEST_TREE PRIVATE "${JSON-C_SOURCE_DIR}/extern/CuTest/CuTest.c")

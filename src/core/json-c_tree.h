@@ -17,35 +17,29 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
 IN THE SOFTWARE.
 */
+#ifndef JSON_C_TREE
+#define JSON_C_TREE
 
-/*
-JSON file format:
-- written in "key":value pairs
-- values can have the following types:
-    - number
-    - string
-    - bool
-    - array -- list of values (eg. ["Apple", "Pear", "Peach"...] )
-    - object -- collection of key/value pairs (eg. { "name":"Jack", "age":5, ...} )
-- Objects can be nested together to represent the structure of data
-*/
-#ifndef JSON_C_PARSER
-#define JSON_C_PARSER
+#include "json-c_types.h"
+#include "json-c_linked_list.h"
 
-#include "json-c_tree.h"
+// NOTE: Get rid of JSONArray and JSONObject and simply use the JSONValueType
+//       as a quick way of determining whether or not the tree search should proceed
+//       to child nodes (if there are any), because Arrays and Objects are guaranteed 
+//       to have values that need to be looped for, whereas the other types do not
 
-// Parser object that reads a JSON file at the provided filepath holds the extracted data
-typedef struct JSONParser
+typedef struct JSONTreeNode
 {
-    char *filePath;
-    int numOfPairs;
-    JSONTree *pairs;
-} JSONParser;
+    JSONPair *info;
+    JSONLinkedList *childNodes;
+} JSONTreeNode;
 
-// Parses the provided file and stores all of the key/value pairs contained within
-// Returns 1 if parsing was successful, 0 if parsing failed and -1 if file couldn't be found
-int jsonParseFile(JSONParser *parser, const char *path);
-// Clears the JSONParser of all data and prepares it for re-use by jsonParseFile()
-void jsonClearParser(JSONParser *parser);
+typedef struct JSONTree
+{
+    JSONLinkedList *nodes;
+} JSONTree;
+
+int jsonTreeCreate(JSONTree **treePtrPtr);
+int jsonTreeFree(JSONTree **treePtrPtr, int freeValues);
 
 #endif

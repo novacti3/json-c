@@ -17,35 +17,37 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
 IN THE SOFTWARE.
 */
-
-/*
-JSON file format:
-- written in "key":value pairs
-- values can have the following types:
-    - number
-    - string
-    - bool
-    - array -- list of values (eg. ["Apple", "Pear", "Peach"...] )
-    - object -- collection of key/value pairs (eg. { "name":"Jack", "age":5, ...} )
-- Objects can be nested together to represent the structure of data
-*/
-#ifndef JSON_C_PARSER
-#define JSON_C_PARSER
-
 #include "json-c_tree.h"
 
-// Parser object that reads a JSON file at the provided filepath holds the extracted data
-typedef struct JSONParser
+#include <stdlib.h>
+
+int jsonTreeCreate(JSONTree **treePtrPtr)
 {
-    char *filePath;
-    int numOfPairs;
-    JSONTree *pairs;
-} JSONParser;
+    if(*treePtrPtr != NULL)
+        jsonTreeFree(treePtrPtr, 1);
+    
+    JSONTree *newTree = (JSONTree*)malloc(sizeof(JSONTree));
+    if(newTree == NULL)
+        return 0;
+    
+    newTree->nodes = NULL;
+    if(jsonLinkedListCreate(&(newTree->nodes)) == 0)
+        return 0;
 
-// Parses the provided file and stores all of the key/value pairs contained within
-// Returns 1 if parsing was successful, 0 if parsing failed and -1 if file couldn't be found
-int jsonParseFile(JSONParser *parser, const char *path);
-// Clears the JSONParser of all data and prepares it for re-use by jsonParseFile()
-void jsonClearParser(JSONParser *parser);
+    *treePtrPtr = newTree;
+    return 1;
+}
+int jsonTreeFree(JSONTree **treePtrPtr, int freeValues)
+{
+    JSONTree *tree = *treePtrPtr;
 
-#endif
+    if(tree == NULL)
+        return -1;
+    if(tree->nodes == NULL)
+        return 0;
+
+    if(jsonLinkedListFree(&(tree->nodes), freeValues))
+        return 0;
+    else
+        return 1;
+}
