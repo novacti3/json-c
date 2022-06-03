@@ -51,3 +51,48 @@ int jsonTreeFree(JSONTree **treePtrPtr, int freeValues)
     else
         return 1;
 }
+
+int jsonTreeCreateNode(JSONTreeNode **out, char* key, JSONValue value)
+{
+    if(out == NULL)
+        return -1;
+    
+    JSONTreeNode *outNode = *out;
+    outNode = (JSONTreeNode*)malloc(sizeof(JSONTreeNode));
+    outNode->info = (JSONPair*)malloc(sizeof(JSONPair));
+    outNode->info->key = key;
+    outNode->info->value = value;
+    outNode->childNodes = NULL;
+    jsonLinkedListCreate(&(outNode->childNodes));
+
+    *out = outNode;
+
+    return 1;
+}
+
+int jsonTreeInsert(JSONTree **treePtrPtr, JSONTreeNode **nodePtrPtr, JSONTreeNode **parentNodePtrPtr)
+{
+    JSONTree *tree = *treePtrPtr;
+    JSONTreeNode *node = *nodePtrPtr;
+    
+    if(tree == NULL)
+        return -1;
+    if(node == NULL)
+        return 0;
+
+    if(parentNodePtrPtr == NULL)
+    {
+        jsonLinkedListPushBack(&(tree->nodes), (void*)node);
+    }
+    else
+    {
+        JSONTreeNode *parentNode = *parentNodePtrPtr;
+        jsonLinkedListPushBack(&(parentNode->childNodes), (void*)node);
+    }
+    
+    return 1;
+}
+int jsonTreeRemove(JSONTreeNode **nodePtrPtr, int freeChildren)
+{
+
+}

@@ -39,7 +39,56 @@ typedef struct JSONTree
     JSONLinkedList *nodes;
 } JSONTree;
 
+/*
+Creates a new tree
+
+If the provided tree ptr is not NULL, 
+the function frees the currently present tree 
+and replaces the old tree with an empty one
+
+THE PASSED IN TREE PTR MUST BE SET TO NULL WHEN FIRST DECLARING THE TREE PTR VAR
+like so:
+JSONTree *tree = NULL;
+jsonCreateTree(&tree);
+
+Returns: 
+1 -- successfully allocated a new empty tree
+0 -- allocation was unsuccessful
+*/
 int jsonTreeCreate(JSONTree **treePtrPtr);
+/*
+Frees the provided tree and all of its nodes
+
+If 'freeValues' parameter is set to 1, the values held by the tree's nodes will be freed as well
+
+Returns: 
+ 1 -- all nodes were freed correctly
+ 0 -- some nodes were not freed
+-1 -- provided tree is uninitialized
+*/
 int jsonTreeFree(JSONTree **treePtrPtr, int freeValues);
+
+int jsonTreeCreateNode(JSONTreeNode **out, char* key, JSONValue value);
+
+/*
+Inserts a new node into the tree
+
+If a parent node is specifies, the new node gets inserted as the parent node's child
+Otherwise, it is inserted as a child of the root node
+
+Returns: 
+ 1 -- node inserted successfully
+ 0 -- failed inserting node 
+-1 -- provided tree is uninitialized
+*/
+int jsonTreeInsert(JSONTree **treePtrPtr, JSONTreeNode **nodePtrPtr, JSONTreeNode **parentNodePtrPtr);
+/*
+Removes the provided node
+
+If 'freeChildren' parameter is set, all of the node's children get removed as well
+
+Returns:
+*/
+int jsonTreeRemove(JSONTreeNode **nodePtrPtr, int freeChildren);
 
 #endif
