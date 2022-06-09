@@ -34,6 +34,9 @@ jsonTreeCreate(&x); \
 static JSONTreeNode* NODE_ONE;
 static JSONTreeNode* NODE_TWO;
 static JSONTreeNode* NODE_THREE; 
+static JSONTreeNode* NODE_FOUR; 
+static JSONTreeNode* NODE_FIVE; 
+static JSONTreeNode* NODE_SIX; 
 
 // Forward declarations of methods
 // that will test the functionality
@@ -41,6 +44,7 @@ static JSONTreeNode* NODE_THREE;
 
 void TestTreeCreate(CuTest *test);
 void TestTreeInsert(CuTest *test);
+void TestTreeGetNode(CuTest *test);
 void TestTreeFree(CuTest *test);
 
 // MAIN FUNC
@@ -52,17 +56,22 @@ int main()
     // Create the tests
     CuTest *testTreeCreate = CuTestNew("Create tree", &TestTreeCreate);
     CuTest *testTreeInsert = CuTestNew("Insert node into tree", &TestTreeInsert);
+    CuTest *testTreeGetNode = CuTestNew("Get node of tree", &TestTreeGetNode);
     CuTest *testTreeFree = CuTestNew("Free tree", &TestTreeFree);
 
     // Add tests to suite
     CuSuiteAdd(suite, testTreeCreate);
     CuSuiteAdd(suite, testTreeInsert);
+    CuSuiteAdd(suite, testTreeGetNode);
     CuSuiteAdd(suite, testTreeFree);
 
     // Initialize constants
     jsonTreeCreateNode(&NODE_ONE, "node_one", (JSONValue){.value = (void*)5, .type = JSON_VALUE_TYPE_INT});
     jsonTreeCreateNode(&NODE_TWO, "node_two", (JSONValue){.value = (void*)-4, .type = JSON_VALUE_TYPE_INT});
-    jsonTreeCreateNode(&NODE_THREE, "node_three", (JSONValue){.value = NULL, .type = JSON_VALUE_TYPE_NULL});
+    jsonTreeCreateNode(&NODE_THREE, "node_three", (JSONValue){.value = (void*)4, .type = JSON_VALUE_TYPE_INT});
+    jsonTreeCreateNode(&NODE_FOUR, "node_four", (JSONValue){.value = (void*)"hello world", .type = JSON_VALUE_TYPE_STRING});
+    jsonTreeCreateNode(&NODE_FIVE, "node_five", (JSONValue){.value = (void*)0, .type = JSON_VALUE_TYPE_BOOL});
+    jsonTreeCreateNode(&NODE_SIX, "", (JSONValue){.value = NULL, .type = JSON_VALUE_TYPE_NULL});
 
     // Run the suite and retrieve the results
     CuSuiteRun(suite);
@@ -90,8 +99,9 @@ void TestTreeCreate(CuTest *test)
     int createFuncResult = jsonTreeCreate(&tree);
     // Assert if list failed allocating
     CuAssertIntEquals(test, 1, createFuncResult);
-    // Assert if the start of the list not empty
-    CuAssertPtrNotNull(test, tree->nodes);
+    CuAssertPtrNotNull(test, tree->root);
+    CuAssertPtrNotNull(test, tree->root->info);
+    CuAssertPtrNotNull(test, tree->root->childNodes);
 }
 
 void TestTreeInsert(CuTest *test)
@@ -99,15 +109,52 @@ void TestTreeInsert(CuTest *test)
     CREATE_TREE(tree);
 
     jsonTreeInsert(&tree, &NODE_ONE, NULL);
-    CuAssertIntEquals(test, 1, tree->nodes->size);
+    CuAssertIntEquals(test, 1, tree->root->childNodes->size);
 
     jsonTreeInsert(&tree, &NODE_TWO, NULL);
-    CuAssertIntEquals(test, 2, tree->nodes->size);
+    CuAssertIntEquals(test, 2, tree->root->childNodes->size);
 
     jsonTreeInsert(&tree, &NODE_THREE, &NODE_ONE);
-    CuAssertIntEquals(test, 2, tree->nodes->size);
+    CuAssertIntEquals(test, 2, tree->root->childNodes->size);
     CuAssertIntEquals(test, 1, NODE_ONE->childNodes->size);
 }
+
+void TestTreeGetNode(CuTest *test)
+{
+    CREATE_TREE(tree);
+
+    /* Tree diagram:
+            NODE_ONE ---- NODE_TWO ---- NODE_SIX
+                |      
+            NODE_THREE
+            /        \
+        NODE_FOUR NODE_FIVE
+    */
+    jsonTreeInsert(&tree, &NODE_ONE, NULL);
+    jsonTreeInsert(&tree, &NODE_TWO, NULL);
+    jsonTreeInsert(&tree, &NODE_THREE, &NODE_ONE);
+    jsonTreeInsert(&tree, &NODE_FOUR, &NODE_THREE);
+    jsonTreeInsert(&tree, &NODE_FIVE, &NODE_THREE);
+    jsonTreeInsert(&tree, &NODE_SIX, NULL);
+
+    // Test if the function reacts appropriately to unusable data being passed in
+    // to prevent crashes etc.
+    CuAssertIntEquals(test, jsonTreeGetNode(NULL, "", NULL), -1);
+    CuAssertIntEquals(test, jsonTreeGetNode(&tree, "", NULL), -1);
+
+    // Test if function exists when trying to search for an anonymous node
+    // (undefined behaviour)
+    JSONTreeNode *nodeSix = NULL;
+    CuAssertIntEquals(test, jsonTreeGetNode(&tree, "", &nodeSix), 0);
+    
+    // Test if the function properly finds and returs the desired node
+    JSONTreeNode *nodeFive = NULL;
+    CuAssertIntEquals(test, jsonTreeGetNode(&tree, "node_five", &nodeFive), 1);
+    CuAssertPtrNotNull(test, nodeFive);
+    CuAssertStrEquals(test, nodeFive->info->key, "node_five");
+    CuAssertIntEquals(test, (int)(nodeFive->info->value.value), 0);
+}
+
 
 void TestTreeFree(CuTest *test)
 {

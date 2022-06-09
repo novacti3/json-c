@@ -77,20 +77,35 @@ Returns:
 */
 int jsonLinkedListContains(JSONLinkedList** const listPtrPtr, void *value);
 
+int _jsonLinkedListAt(JSONLinkedList** const listPtrPtr, int index, void** outValue);
 /*
-Retrieves the value of a node at the provided index
+Retrieves the value of a node at the provided index as a reference
 Returns:
- 1 -- index was found and a value was successfully retrieved,
- 0 -- node at the desired index doesn't exist,
+ 1 -- index was found and a value was successfully retrieved
+ 0 -- node at the desired index doesn't exist
 -1 -- provided list is uninitialized
 */
-int _jsonLinkedListAt(JSONLinkedList** const listPtrPtr, int index, void** outValue);
+// FIXME: Add param for func result
 #define jsonLinkedListAt(listPtrPtr, index, outValue, T) \
 { \
     void* temp = NULL; \
     _jsonLinkedListAt(listPtrPtr, index, &temp); \
     outValue = *((T*)temp); \
-}
+} \
+/*
+Retrieves the value of a node at the provided index as a pointer
+Returns:
+ 1 -- index was found and a value was successfully retrieved
+ 0 -- node at the desired index doesn't exist
+-1 -- provided list is uninitialized
+*/
+// FIXME: Figure out a way to make funcResult an optional parameter
+#define jsonLinkedListAtPtr(listPtrPtr, index, funcResultPtr, outValue, Tptr) \
+{ \
+    void *temp = NULL; \
+    *funcResultPtr = _jsonLinkedListAt(listPtrPtr, index, &temp); \
+    outValue = (Tptr)temp; \
+} \
 
 /*
 Inserts the specified value into a node at the desired index

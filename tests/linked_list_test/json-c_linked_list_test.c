@@ -228,6 +228,11 @@ void TestListAt(CuTest *test)
     CuAssertIntEquals(test, VALUE_ONE, val1);
     CuAssertIntEquals(test, VALUE_TWO, val2);
     CuAssertIntEquals(test, VALUE_THREE, val3);
+
+    int funcResult1;
+    int* val1Ptr;
+    jsonLinkedListAtPtr(&list, 0, &funcResult1, val1Ptr, int*);
+    CuAssertPtrEquals(test, &VALUE_ONE, val1Ptr);
 }
 void TestListContains(CuTest *test)
 {

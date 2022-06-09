@@ -36,7 +36,7 @@ typedef struct JSONTreeNode
 
 typedef struct JSONTree
 {
-    JSONLinkedList *nodes;
+    JSONTreeNode *root;
 } JSONTree;
 
 /*
@@ -90,5 +90,16 @@ If 'freeChildren' parameter is set, all of the node's children get removed as we
 Returns:
 */
 int jsonTreeRemove(JSONTreeNode **nodePtrPtr, int freeChildren);
+
+/*
+Traverses the tree in search for a node with the provided key.
+ONLY WORKS FOR NON-ANONYMOUS NODES
+
+Returns:
+ 1 -- node was found
+ 0 -- node was not found
+-1 -- tree is unitialized
+*/
+int jsonTreeGetNode(JSONTree **treePtrPtr, const char* const key, JSONTreeNode **out);
 
 #endif

@@ -25,6 +25,9 @@ IN THE SOFTWARE.
 // The max value must be specified as list->size - 1 (for clarity in code)
 #define IS_INDEX_OUT_OF_RANGE(i, max) (i < 0 || (i > max && i != 0))
 
+// TODO: Add if(listPtrPtr == NULL) return -1 to the start of every function
+//       to prevent dereferencing what could very well be a null pointer
+
 int jsonLinkedListCreate(JSONLinkedList **listPtrPtr)
 {
     // Free the provided pointer to avoid memory leaks
