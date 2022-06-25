@@ -69,6 +69,7 @@ Returns:
 int jsonTreeFree(JSONTree **treePtrPtr, int freeValues);
 
 int jsonTreeCreateNode(JSONTreeNode **out, char* key, JSONValue value);
+int jsonTreeFreeNode(JSONTreeNode **in);
 
 /*
 Inserts a new node into the tree

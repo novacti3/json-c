@@ -100,6 +100,7 @@ Returns:
 -1 -- provided list is uninitialized
 */
 // FIXME: Figure out a way to make funcResult an optional parameter
+// FIXME: funcResult still doesn't work properly
 #define jsonLinkedListAtPtr(listPtrPtr, index, funcResultPtr, outValue, Tptr) \
 { \
     void *temp = NULL; \
