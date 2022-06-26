@@ -33,11 +33,27 @@ static JSONTreeNode* NODE_FOUR;
 static JSONTreeNode* NODE_FIVE; 
 static JSONTreeNode* NODE_SIX; 
 
-// Because having to write this code in EVERY SINGLE TEST CASE is, frankly, quite tedious
-#define CREATE_TREE(x) \
-JSONTree* x = NULL; \
-jsonTreeCreate(&x); \
+// Forward declarations of methods
+// that will test the functionality
+// of each aspect of the tree
+void TestTreeCreate(CuTest *test);
+void TestTreeFree(CuTest *test);
+void TestTreeInsert(CuTest *test);
+void TestTreeGetNode(CuTest *test);
 
+// Helper function for initiating the tree nodes to insert into the test tree
+// Required because nodes have to be reinitialized after every test due to freeing
+// the old tree to prevent nodes having children with corrupt data, given that they are static
+static void InitTreeNodes()
+{
+    jsonTreeCreateNode(&NODE_ONE, "node_one", (JSONValue){.value = (void*)5, .type = JSON_VALUE_TYPE_INT}); 
+    jsonTreeCreateNode(&NODE_TWO, "node_two", (JSONValue){.value = (void*)-4, .type = JSON_VALUE_TYPE_INT}); 
+    jsonTreeCreateNode(&NODE_THREE, "node_three", (JSONValue){.value = (void*)4, .type = JSON_VALUE_TYPE_INT}); 
+    jsonTreeCreateNode(&NODE_FOUR, "node_four", (JSONValue){.value = (void*)"hello world", .type = JSON_VALUE_TYPE_STRING}); 
+    jsonTreeCreateNode(&NODE_FIVE, "node_five", (JSONValue){.value = (void*)0, .type = JSON_VALUE_TYPE_BOOL}); 
+    jsonTreeCreateNode(&NODE_SIX, "", (JSONValue){.value = NULL, .type = JSON_VALUE_TYPE_NULL});
+}
+// Helper function to create a tree populated with nodes following this diagram:
 /* Tree diagram:
             NODE_ONE ---- NODE_TWO ---- NODE_SIX
                 |      
@@ -45,23 +61,21 @@ jsonTreeCreate(&x); \
             /        \
         NODE_FOUR NODE_FIVE
 */
-#define CREATE_POPULATED_TREE(x) \
-CREATE_TREE(x) \
-jsonTreeInsert(&x, &NODE_ONE, NULL); \
-jsonTreeInsert(&x, &NODE_TWO, NULL); \
-jsonTreeInsert(&x, &NODE_THREE, &NODE_ONE); \
-jsonTreeInsert(&x, &NODE_FOUR, &NODE_THREE); \
-jsonTreeInsert(&x, &NODE_FIVE, &NODE_THREE); \
-jsonTreeInsert(&x, &NODE_SIX, NULL); \
+static void InitPopulatedTree(JSONTree **treePtrPtr)
+{
+    JSONTree *tree = NULL;
+    jsonTreeCreate(&tree);
+    InitTreeNodes(); 
 
-// Forward declarations of methods
-// that will test the functionality
-// of each aspect of the linked lists
-
-void TestTreeCreate(CuTest *test);
-void TestTreeFree(CuTest *test);
-void TestTreeInsert(CuTest *test);
-void TestTreeGetNode(CuTest *test);
+    jsonTreeInsert(&tree, &NODE_ONE, NULL); 
+    jsonTreeInsert(&tree, &NODE_TWO, NULL); 
+    jsonTreeInsert(&tree, &NODE_THREE, &NODE_ONE); 
+    jsonTreeInsert(&tree, &NODE_FOUR, &NODE_THREE); 
+    jsonTreeInsert(&tree, &NODE_FIVE, &NODE_THREE); 
+    jsonTreeInsert(&tree, &NODE_SIX, NULL);
+    
+    *treePtrPtr = tree;
+}
 
 // MAIN FUNC
 int main()
@@ -78,17 +92,8 @@ int main()
     // Add tests to suite
     CuSuiteAdd(suite, testTreeCreate);
     CuSuiteAdd(suite, testTreeFree);
-    // FIXME: These crash, pls fix
-    // CuSuiteAdd(suite, testTreeInsert);
-    // CuSuiteAdd(suite, testTreeGetNode);
-
-    // Initialize constants
-    jsonTreeCreateNode(&NODE_ONE, "node_one", (JSONValue){.value = (void*)5, .type = JSON_VALUE_TYPE_INT});
-    jsonTreeCreateNode(&NODE_TWO, "node_two", (JSONValue){.value = (void*)-4, .type = JSON_VALUE_TYPE_INT});
-    jsonTreeCreateNode(&NODE_THREE, "node_three", (JSONValue){.value = (void*)4, .type = JSON_VALUE_TYPE_INT});
-    jsonTreeCreateNode(&NODE_FOUR, "node_four", (JSONValue){.value = (void*)"hello world", .type = JSON_VALUE_TYPE_STRING});
-    jsonTreeCreateNode(&NODE_FIVE, "node_five", (JSONValue){.value = (void*)0, .type = JSON_VALUE_TYPE_BOOL});
-    jsonTreeCreateNode(&NODE_SIX, "", (JSONValue){.value = NULL, .type = JSON_VALUE_TYPE_NULL});
+    CuSuiteAdd(suite, testTreeInsert);
+    CuSuiteAdd(suite, testTreeGetNode);
 
     // Run the suite and retrieve the results
     CuSuiteRun(suite);
@@ -114,32 +119,46 @@ void TestTreeCreate(CuTest *test)
     // NOTE: Checks for the fail results might be great too
 
     int createFuncResult = jsonTreeCreate(&tree);
-    // Assert if list failed allocating
+    // Successfully created the tree
     CuAssertIntEquals(test, 1, createFuncResult);
+    // Successfully allocated memory for the root node of the tree
     CuAssertPtrNotNull(test, tree->root);
+    // Successfully allocated memory for the info struct of the root node
     CuAssertPtrNotNull(test, tree->root->info);
+    // Successfully allocated memory for the list of child nodes of the root node
     CuAssertPtrNotNull(test, tree->root->childNodes);
 }
 void TestTreeFree(CuTest *test)
 {
-    CREATE_POPULATED_TREE(tree);
+    JSONTree *tree = NULL;
+    InitPopulatedTree(&tree);
+    
     int freeFuncResult = jsonTreeFree(&tree, 1);
+    // Successfully freed the tree
     CuAssertIntEquals(test, 1, freeFuncResult);
+    // The tree ptr is null
     CuAssertPtrEquals(test, NULL, tree);   
 }
 
 void TestTreeInsert(CuTest *test)
 {
-    CREATE_TREE(tree);
+    JSONTree *tree = NULL;
+    jsonTreeCreate(&tree);
+    InitTreeNodes();
 
     jsonTreeInsert(&tree, &NODE_ONE, NULL);
+    // The list of root's children has successfully increased by one upon insertion
     CuAssertIntEquals(test, 1, tree->root->childNodes->size);
 
     jsonTreeInsert(&tree, &NODE_TWO, NULL);
+    // The list of root's children has successfully increased by one upon insertion
     CuAssertIntEquals(test, 2, tree->root->childNodes->size);
 
     jsonTreeInsert(&tree, &NODE_THREE, &NODE_ONE);
+    // The list of root's children has stayed the same upon insertion
+    // due to the parent node parameter being provided
     CuAssertIntEquals(test, 2, tree->root->childNodes->size);
+    // The list of the parent node's children has increased by one
     CuAssertIntEquals(test, 1, NODE_ONE->childNodes->size);
     
     jsonTreeFree(&tree, 0);
@@ -154,7 +173,8 @@ void TestTreeGetNode(CuTest *test)
             /        \
         NODE_FOUR NODE_FIVE
     */
-    CREATE_POPULATED_TREE(tree);    
+    JSONTree *tree = NULL;
+    InitPopulatedTree(&tree);    
 
     // Test if the function reacts appropriately to unusable data being passed in
     // to prevent crashes etc.
