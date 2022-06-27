@@ -19,6 +19,8 @@ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEAL
 IN THE SOFTWARE.
 */
 
+// TODO: Add a comment for each CuAssert explaining what it is checking for
+
 #include <stdio.h>
 #include <stdlib.h>
 

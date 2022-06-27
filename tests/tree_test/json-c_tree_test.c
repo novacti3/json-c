@@ -37,6 +37,8 @@ static JSONTreeNode* NODE_SIX;
 // that will test the functionality
 // of each aspect of the tree
 void TestTreeCreate(CuTest *test);
+void TestTreeNodeCreate(CuTest *test);
+void TestTreeNodeFree(CuTest *test);
 void TestTreeFree(CuTest *test);
 void TestTreeInsert(CuTest *test);
 void TestTreeGetNode(CuTest *test);
@@ -85,12 +87,16 @@ int main()
 
     // Create the tests
     CuTest *testTreeCreate = CuTestNew("Create tree", &TestTreeCreate);
+    CuTest *testTreeNodeCreate = CuTestNew("Create node", &TestTreeNodeCreate);
+    CuTest *testTreeNodeFree = CuTestNew("Free node", &TestTreeNodeFree);
     CuTest *testTreeFree = CuTestNew("Free tree", &TestTreeFree);
     CuTest *testTreeInsert = CuTestNew("Insert node into tree", &TestTreeInsert);
     CuTest *testTreeGetNode = CuTestNew("Get node of tree", &TestTreeGetNode);
 
     // Add tests to suite
     CuSuiteAdd(suite, testTreeCreate);
+    CuSuiteAdd(suite, testTreeNodeCreate);
+    CuSuiteAdd(suite, testTreeNodeFree);
     CuSuiteAdd(suite, testTreeFree);
     CuSuiteAdd(suite, testTreeInsert);
     CuSuiteAdd(suite, testTreeGetNode);
@@ -118,15 +124,46 @@ void TestTreeCreate(CuTest *test)
     
     // NOTE: Checks for the fail results might be great too
 
-    int createFuncResult = jsonTreeCreate(&tree);
+    int funcResult = jsonTreeCreate(&tree);
     // Successfully created the tree
-    CuAssertIntEquals(test, 1, createFuncResult);
+    CuAssertIntEquals(test, 1, funcResult);
     // Successfully allocated memory for the root node of the tree
     CuAssertPtrNotNull(test, tree->root);
     // Successfully allocated memory for the info struct of the root node
     CuAssertPtrNotNull(test, tree->root->info);
     // Successfully allocated memory for the list of child nodes of the root node
     CuAssertPtrNotNull(test, tree->root->childNodes);
+}
+static JSONTreeNode *TEST_NODE = NULL;
+void TestTreeNodeCreate(CuTest *test)
+{
+    JSONValue nodeValue = 
+    {
+        .type = JSON_VALUE_TYPE_STRING, 
+        .value = "Hello world"
+    };
+    int funcResult = jsonTreeCreateNode(&TEST_NODE, "testNode", nodeValue);
+    
+    // Successfully freed the node
+    CuAssertIntEquals(test, 1, funcResult);
+    // Successfully allocated memory for the JSONTreeNode ptr
+    CuAssertPtrNotNull(test, TEST_NODE);
+    // Successfully allocated memory for the node info
+    CuAssertPtrNotNull(test, TEST_NODE->info);
+    // The name (key) of the node matches
+    CuAssertStrEquals(test, "testNode", TEST_NODE->info->key);
+    // The value of the node matches
+    CuAssertStrEquals(test, "Hello world", TEST_NODE->info->value.value);
+    // The list of child nodes was initialized correctly
+    CuAssertPtrNotNull(test, TEST_NODE->childNodes);
+}
+void TestTreeNodeFree(CuTest *test)
+{
+    int funcResult = jsonTreeFreeNode(&TEST_NODE);
+    // Successfully freed the node
+    CuAssertIntEquals(test, 1, funcResult);
+    // The node's ptr was freed correctly
+    CuAssertPtrEquals(test, NULL, TEST_NODE);
 }
 void TestTreeFree(CuTest *test)
 {
@@ -178,7 +215,9 @@ void TestTreeGetNode(CuTest *test)
 
     // Test if the function reacts appropriately to unusable data being passed in
     // to prevent crashes etc.
+    // Invalid tree pointer
     CuAssertIntEquals(test, -1, jsonTreeGetNode(NULL, "", NULL));
+    // Invalid out ptr specified
     CuAssertIntEquals(test, -1, jsonTreeGetNode(&tree, "", NULL));
 
     // Test if function exists when trying to search for an anonymous node
@@ -188,8 +227,11 @@ void TestTreeGetNode(CuTest *test)
     
     // Test if the function properly finds and returs the desired node
     JSONTreeNode *nodeFive = NULL;
+    // Node found successfully
     CuAssertIntEquals(test, 1, jsonTreeGetNode(&tree, "node_five", &nodeFive));
+    // The out ptr was populated with the address of the found node
     CuAssertPtrNotNull(test, nodeFive);
+    // The info of the desired node checks out with what the info should be
     CuAssertStrEquals(test, "node_five", nodeFive->info->key);
     CuAssertIntEquals(test, 0, (int)(nodeFive->info->value.value));
 

@@ -63,12 +63,28 @@ If 'freeValues' parameter is set to 1, the values held by the tree's nodes will 
 
 Returns: 
  1 -- all nodes were freed correctly
- 0 -- some nodes were not freed
--1 -- provided tree is uninitialized
+ 0 -- failed freeing the tree or some of its children
+-1 -- provided tree is uninitialized or its root node is NULL
 */
 int jsonTreeFree(JSONTree **treePtrPtr, int freeValues);
 
+/*
+Initializes the provided JSONTreeNode with the following key and value
+
+Returns:
+ 1 -- node was initialized successfully
+ 0 -- failed initializing node
+-1 -- provided JSONTreeNode ptr ptr was NULL
+*/
 int jsonTreeCreateNode(JSONTreeNode **out, char* key, JSONValue value);
+/*
+Frees the provided JSONTreeNode and all of its components, including its children
+
+Returns:
+ 1 -- node was freed successfully
+ 0 -- failed freeing node or some of its children
+-1 -- provided JSONTreeNode ptr ptr was NULL
+*/
 int jsonTreeFreeNode(JSONTreeNode **in);
 
 /*

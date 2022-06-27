@@ -17,6 +17,10 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
 IN THE SOFTWARE.
 */
+
+// TODO: Do a pass on all of the comments and go into more detail 
+//       about what makes the funcs return what error code
+
 #ifndef JSON_C_LINKED_LIST
 #define JSON_C_LINKED_LIST
 

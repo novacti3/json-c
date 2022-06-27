@@ -54,16 +54,20 @@ int jsonTreeFree(JSONTree **treePtrPtr, int freeValues)
     if (tree == NULL)
         return -1;
     if (tree->root == NULL)
-        return 0;
+        return -1;
 
     JSONTreeNode *rootNode = tree->root;
 
+    int listAtFuncResult;
+    int freeFuncResult;
     for (size_t i = 0; i < rootNode->childNodes->size; i++)
     {
-        int funcResult;
         JSONTreeNode *child = NULL;
-        jsonLinkedListAtPtr(&(rootNode->childNodes), i, &funcResult, child, JSONTreeNode*); 
-        jsonTreeFreeNode(&child); 
+        jsonLinkedListAtPtr(&(rootNode->childNodes), i, &listAtFuncResult, child, JSONTreeNode*); 
+        
+        freeFuncResult = jsonTreeFreeNode(&child); 
+        if(freeFuncResult == 0)
+            return 0;
     }
     
     /* NOTE: 
@@ -91,13 +95,7 @@ int jsonTreeFree(JSONTree **treePtrPtr, int freeValues)
     tree = NULL;
 
     *treePtrPtr = tree;
-    // FIXME: Throw the return 0 at a place where it makes more sense
-    //        because due to tree = NULL, this condition is always guaranteed
-    //        to return 1, therefore doing any sort of error code return here is pretty useless 
-    if(tree == NULL)
-        return 1;
-    else
-        return 0;
+    return 1;
 }
 
 int jsonTreeCreateNode(JSONTreeNode **out, char *key, JSONValue value)
@@ -105,17 +103,26 @@ int jsonTreeCreateNode(JSONTreeNode **out, char *key, JSONValue value)
     if (out == NULL)
         return -1;
 
-    // TODO: add return 0s if allocated ptrs are NULL
     JSONTreeNode *outNode = *out;
+
     outNode = (JSONTreeNode *)malloc(sizeof(JSONTreeNode));
+    if(outNode == NULL)
+        return 0;
+    
     outNode->info = (JSONPair *)malloc(sizeof(JSONPair));
+    if(outNode->info == NULL)
+        return 0;
+    
     outNode->info->key = key;
     outNode->info->value = value;
     outNode->childNodes = NULL;
-    jsonLinkedListCreate(&(outNode->childNodes));
+    // if(jsonLinkedListCreate(&(outNode->childNodes)) != 1)
+    //     return 0;
+    int listFuncResult = jsonLinkedListCreate(&(outNode->childNodes));
+    if(listFuncResult != 1)
+        return 0;
 
     *out = outNode;
-
     return 1;
 }
 int jsonTreeFreeNode(JSONTreeNode **in)
@@ -128,12 +135,15 @@ int jsonTreeFreeNode(JSONTreeNode **in)
     // If it has children, loop through those first before freeing this node
     if(node->childNodes->size > 0)
     {
-        int funcResult = 0;
+        int listAtFuncResult;
+        int freeFuncResult;
         for (size_t i = 0; i < node->childNodes->size; i++)
         {
             JSONTreeNode *child = NULL;
-            jsonLinkedListAtPtr(&(node->childNodes), i, &funcResult, child, JSONTreeNode*); 
-            funcResult = jsonTreeFreeNode(&child);
+            jsonLinkedListAtPtr(&(node->childNodes), i, &listAtFuncResult, child, JSONTreeNode*); 
+            freeFuncResult = jsonTreeFreeNode(&child);
+            if(freeFuncResult == 0)
+                return 0;
         }
     }
 
@@ -148,14 +158,8 @@ int jsonTreeFreeNode(JSONTreeNode **in)
     free(node);
     node = NULL;
 
-    // FIXME: Throw the return 0 at a place where it makes more sense
-    //        because due to tree = NULL, this condition is always guaranteed
-    //        to return 1, therefore doing any sort of error code return here is pretty useless 
     *in = node;
-    if(node == NULL)
-        return 1;
-    else
-        return 0;
+    return 1;
 }
 
 int jsonTreeInsert(JSONTree **treePtrPtr, JSONTreeNode **nodePtrPtr, JSONTreeNode **parentNodePtrPtr)
