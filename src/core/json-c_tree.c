@@ -28,7 +28,7 @@ int jsonTreeCreate(JSONTree **treePtrPtr)
         return -1;
 
     if (*treePtrPtr != NULL)
-        jsonTreeFree(treePtrPtr, 1);
+        jsonTreeFree(treePtrPtr);
 
     JSONTree *newTree = (JSONTree*)malloc(sizeof(JSONTree));
     if (newTree == NULL)
@@ -43,8 +43,7 @@ int jsonTreeCreate(JSONTree **treePtrPtr)
     *treePtrPtr = newTree;
     return 1;
 }
-// FIXME: Have freeValues param actually affect the stuff
-int jsonTreeFree(JSONTree **treePtrPtr, int freeValues)
+int jsonTreeFree(JSONTree **treePtrPtr)
 {
     if (treePtrPtr == NULL)
         return -1;
@@ -65,7 +64,7 @@ int jsonTreeFree(JSONTree **treePtrPtr, int freeValues)
         JSONTreeNode *child = NULL;
         jsonLinkedListAtPtr(&(rootNode->childNodes), i, &listAtFuncResult, child, JSONTreeNode*); 
         
-        freeFuncResult = jsonTreeFreeNode(&child); 
+        freeFuncResult = jsonTreeFreeNode(&child, 1); 
         if(freeFuncResult == 0)
             return 0;
     }
@@ -81,6 +80,9 @@ int jsonTreeFree(JSONTree **treePtrPtr, int freeValues)
         while checking if the node has any children, making sure that the desired node isn't root, 
         which defeated the purpose of jsonTreeFreeNode being a "universal" tree node disposal function.
     */
+    // NOTE: freeNodes param doesn't affect anything here (as it does in jsonTreeFreeNode)
+    //       because the root node is always guaranteed to be the same across every tree,
+    //       is created upon tree creation and should therefore be freed every time to prevent waste
     free(rootNode->info->key);
     rootNode->info->key = NULL;
     free(rootNode->info->value.value);
@@ -125,10 +127,10 @@ int jsonTreeCreateNode(JSONTreeNode **out, char *key, JSONValue value)
     *out = outNode;
     return 1;
 }
-int jsonTreeFreeNode(JSONTreeNode **in)
+int jsonTreeFreeNode(JSONTreeNode **in, int freeChildNodes)
 {
     if(in == NULL)
-        return 0;
+        return -1;
     
     JSONTreeNode *node = *in;
 
@@ -141,20 +143,21 @@ int jsonTreeFreeNode(JSONTreeNode **in)
         {
             JSONTreeNode *child = NULL;
             jsonLinkedListAtPtr(&(node->childNodes), i, &listAtFuncResult, child, JSONTreeNode*); 
-            freeFuncResult = jsonTreeFreeNode(&child);
+            freeFuncResult = jsonTreeFreeNode(&child, freeChildNodes);
             if(freeFuncResult == 0)
                 return 0;
         }
     }
 
     // Free the node components and the list of children
+    // NOTE: Have some sort of way to relink or retrieve the child nodes if they are not to be freed would be dandy
     free(node->info->key);
     node->info->key = NULL;
     free(node->info->value.value);
     node->info->value.value = NULL;
     free(node->info);
     node->info = NULL;
-    jsonLinkedListFree(&(node->childNodes), 1);
+    jsonLinkedListFree(&(node->childNodes), freeChildNodes);
     free(node);
     node = NULL;
 
@@ -165,6 +168,9 @@ int jsonTreeFreeNode(JSONTreeNode **in)
 int jsonTreeInsert(JSONTree **treePtrPtr, JSONTreeNode **nodePtrPtr, JSONTreeNode **parentNodePtrPtr)
 {
     if (treePtrPtr == NULL)
+        return -1;
+
+    if(nodePtrPtr == NULL)
         return -1;
 
     JSONTree *tree = *treePtrPtr;

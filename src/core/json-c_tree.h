@@ -52,21 +52,20 @@ JSONTree *tree = NULL;
 jsonCreateTree(&tree);
 
 Returns: 
-1 -- successfully allocated a new empty tree
-0 -- allocation was unsuccessful
+ 1 -- successfully allocated a new empty tree
+ 0 -- allocation was unsuccessful
+-1 -- provided ptr ptr is uninitialized
 */
 int jsonTreeCreate(JSONTree **treePtrPtr);
 /*
 Frees the provided tree and all of its nodes
-
-If 'freeValues' parameter is set to 1, the values held by the tree's nodes will be freed as well
 
 Returns: 
  1 -- all nodes were freed correctly
  0 -- failed freeing the tree or some of its children
 -1 -- provided tree is uninitialized or its root node is NULL
 */
-int jsonTreeFree(JSONTree **treePtrPtr, int freeValues);
+int jsonTreeFree(JSONTree **treePtrPtr);
 
 /*
 Initializes the provided JSONTreeNode with the following key and value
@@ -85,7 +84,7 @@ Returns:
  0 -- failed freeing node or some of its children
 -1 -- provided JSONTreeNode ptr ptr was NULL
 */
-int jsonTreeFreeNode(JSONTreeNode **in);
+int jsonTreeFreeNode(JSONTreeNode **in, int freeChildNodes);
 
 /*
 Inserts a new node into the tree

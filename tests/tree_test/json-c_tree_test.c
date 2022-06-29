@@ -120,11 +120,13 @@ int main()
 
 void TestTreeCreate(CuTest *test)
 { 
-    JSONTree *tree = NULL;
-    
-    // NOTE: Checks for the fail results might be great too
+    int funcResult = 0;
+    funcResult = jsonTreeCreate(NULL);
+    // Checking that error check for passing a null ptr ptr works
+    CuAssertIntEquals(test, -1, funcResult);
 
-    int funcResult = jsonTreeCreate(&tree);
+    JSONTree *tree = NULL;
+    funcResult = jsonTreeCreate(&tree);
     // Successfully created the tree
     CuAssertIntEquals(test, 1, funcResult);
     // Successfully allocated memory for the root node of the tree
@@ -142,8 +144,13 @@ void TestTreeNodeCreate(CuTest *test)
         .type = JSON_VALUE_TYPE_STRING, 
         .value = "Hello world"
     };
-    int funcResult = jsonTreeCreateNode(&TEST_NODE, "testNode", nodeValue);
     
+    int funcResult = 0;
+    funcResult = jsonTreeCreateNode(NULL, "testNode", nodeValue);
+    // Check to see if providing NULL to the tree pointer returns the appropriate error code
+    CuAssertIntEquals(test, -1, funcResult);
+    
+    funcResult = jsonTreeCreateNode(&TEST_NODE, "testNode", nodeValue);
     // Successfully freed the node
     CuAssertIntEquals(test, 1, funcResult);
     // Successfully allocated memory for the JSONTreeNode ptr
@@ -159,7 +166,12 @@ void TestTreeNodeCreate(CuTest *test)
 }
 void TestTreeNodeFree(CuTest *test)
 {
-    int funcResult = jsonTreeFreeNode(&TEST_NODE);
+    int funcResult = 0;
+    funcResult = jsonTreeFreeNode(NULL, 1);
+    // Check to see if providing NULL to the tree pointer returns the appropriate error code
+    CuAssertIntEquals(test, -1, funcResult);
+
+    funcResult = jsonTreeFreeNode(&TEST_NODE, 1);
     // Successfully freed the node
     CuAssertIntEquals(test, 1, funcResult);
     // The node's ptr was freed correctly
@@ -170,9 +182,14 @@ void TestTreeFree(CuTest *test)
     JSONTree *tree = NULL;
     InitPopulatedTree(&tree);
     
-    int freeFuncResult = jsonTreeFree(&tree, 1);
+    int funcResult = 0;
+    funcResult = jsonTreeFree(NULL);
+    // Check to see if providing NULL to the tree pointer returns the appropriate error code
+    CuAssertIntEquals(test, -1, funcResult);
+
+    funcResult = jsonTreeFree(&tree);
     // Successfully freed the tree
-    CuAssertIntEquals(test, 1, freeFuncResult);
+    CuAssertIntEquals(test, 1, funcResult);
     // The tree ptr is null
     CuAssertPtrEquals(test, NULL, tree);   
 }
@@ -183,22 +200,33 @@ void TestTreeInsert(CuTest *test)
     jsonTreeCreate(&tree);
     InitTreeNodes();
 
-    jsonTreeInsert(&tree, &NODE_ONE, NULL);
+    int funcResult = 0;
+    funcResult = jsonTreeInsert(NULL, &NODE_ONE, NULL);
+    // Check to see if providing NULL to the tree pointer returns the appropriate error code
+    CuAssertIntEquals(test, -1, funcResult);
+    // Check to see if providing NULL as the node to be inserted returns the appropriate error code
+    funcResult = jsonTreeInsert(&tree, NULL, NULL);
+    CuAssertIntEquals(test, -1, funcResult);
+
+    funcResult = jsonTreeInsert(&tree, &NODE_ONE, NULL);
+    CuAssertIntEquals(test, 1, funcResult);
     // The list of root's children has successfully increased by one upon insertion
     CuAssertIntEquals(test, 1, tree->root->childNodes->size);
 
-    jsonTreeInsert(&tree, &NODE_TWO, NULL);
+    funcResult = jsonTreeInsert(&tree, &NODE_TWO, NULL);
+    CuAssertIntEquals(test, 1, funcResult);
     // The list of root's children has successfully increased by one upon insertion
     CuAssertIntEquals(test, 2, tree->root->childNodes->size);
 
-    jsonTreeInsert(&tree, &NODE_THREE, &NODE_ONE);
+    funcResult = jsonTreeInsert(&tree, &NODE_THREE, &NODE_ONE);
+    CuAssertIntEquals(test, 1, funcResult);
     // The list of root's children has stayed the same upon insertion
     // due to the parent node parameter being provided
     CuAssertIntEquals(test, 2, tree->root->childNodes->size);
     // The list of the parent node's children has increased by one
     CuAssertIntEquals(test, 1, NODE_ONE->childNodes->size);
     
-    jsonTreeFree(&tree, 0);
+    jsonTreeFree(&tree);
 }
 
 void TestTreeGetNode(CuTest *test)
@@ -213,27 +241,33 @@ void TestTreeGetNode(CuTest *test)
     JSONTree *tree = NULL;
     InitPopulatedTree(&tree);    
 
+    int funcResult = 0;
     // Test if the function reacts appropriately to unusable data being passed in
     // to prevent crashes etc.
     // Invalid tree pointer
-    CuAssertIntEquals(test, -1, jsonTreeGetNode(NULL, "", NULL));
+    funcResult = jsonTreeGetNode(NULL, "", NULL);
+    CuAssertIntEquals(test, -1, funcResult);
+
     // Invalid out ptr specified
-    CuAssertIntEquals(test, -1, jsonTreeGetNode(&tree, "", NULL));
+    funcResult = jsonTreeGetNode(&tree, "", NULL);
+    CuAssertIntEquals(test, -1, funcResult);
 
     // Test if function exists when trying to search for an anonymous node
     // (undefined behaviour)
     JSONTreeNode *nodeSix = NULL;
-    CuAssertIntEquals(test, jsonTreeGetNode(&tree, "", &nodeSix), 0);
+    funcResult = jsonTreeGetNode(&tree, "", &nodeSix);
+    CuAssertIntEquals(test, 0, funcResult);
     
     // Test if the function properly finds and returs the desired node
     JSONTreeNode *nodeFive = NULL;
+    funcResult = jsonTreeGetNode(&tree, "node_five", &nodeFive);
     // Node found successfully
-    CuAssertIntEquals(test, 1, jsonTreeGetNode(&tree, "node_five", &nodeFive));
+    CuAssertIntEquals(test, 1, funcResult);
     // The out ptr was populated with the address of the found node
     CuAssertPtrNotNull(test, nodeFive);
     // The info of the desired node checks out with what the info should be
     CuAssertStrEquals(test, "node_five", nodeFive->info->key);
     CuAssertIntEquals(test, 0, (int)(nodeFive->info->value.value));
 
-    jsonTreeFree(&tree, 0);
+    jsonTreeFree(&tree);
 }

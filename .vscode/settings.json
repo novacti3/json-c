@@ -3,5 +3,8 @@
     {
         "JSON-C_BUILD_TESTS":true,
         "JSON-C_BUILD_EXAMPLES":true
+    },
+    "files.associations": {
+        "type_traits": "c"
     }
 }
