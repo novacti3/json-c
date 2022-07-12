@@ -193,8 +193,116 @@ int jsonTreeInsert(JSONTree **treePtrPtr, JSONTreeNode **nodePtrPtr, JSONTreeNod
 
     return 1;
 }
-int jsonTreeRemove(JSONTreeNode **nodePtrPtr, int freeChildren)
+
+/*
+Internal function for recursive looping through all of the children
+of the provided start node and their children until desired node is found
+
+Returns:
+ 1 -- node found
+ 0 -- node not found
+-1 -- node not found, end of this branch
+
+-1 signalizes the loop to move to the next branch of the tree
+*/
+static int _jsonRemoveNodeLoop(JSONTreeNode **start, JSONTreeNode** desiredNode)
 {
+    JSONTreeNode *startNode = *start;
+    JSONTreeNode *currentNode = NULL;
+    JSONTreeNode *nodeToRemove = *desiredNode;
+
+    int loopResult = 0;
+    
+    // Only attempt to loop through child nodes if there are any to begin with
+    if(startNode->childNodes->size == 0)
+    {
+        // If this is the desired node, return it
+        if(nodeToRemove == startNode)
+        {
+            // TODO: Remove the node from the parent's list of child nodes
+            jsonLinkedListRemove(&(startNode->childNodes), (void*)nodeToRemove);
+            jsonTreeFreeNode(&startNode, 1);
+            loopResult = 1;
+        }
+        // If not, this is the end of the branch as no children are present
+        else
+            loopResult = -1;
+    }
+    else
+    {
+        // Go through each immediate child of the provided start node
+        for (size_t i = 0; i < startNode->childNodes->size; i++)
+        {
+            int funcResult = 0;
+            jsonLinkedListAtPtr(&startNode->childNodes, i, &funcResult, currentNode, JSONTreeNode*);
+            // If this first level node is the desired node,
+            // there's no need to loop through its children
+            if(nodeToRemove == currentNode)
+            {
+                // TODO: Remove the node from the parent's list of child nodes
+                jsonLinkedListRemove(&(startNode->childNodes), (void*)nodeToRemove);
+                jsonTreeFreeNode(&currentNode, 1);
+                loopResult = 1;
+                break;
+            }
+            // If it is not the desired node and if the node has children,
+            // loop through each of the children and their children
+            // recursively until either the desired node is found
+            // or until all branches have been searched through
+            else if(currentNode->childNodes->size > 0)
+            {
+                do
+                {
+                    loopResult = _jsonRemoveNodeLoop(&currentNode, desiredNode);
+                }
+                while (loopResult == 0);
+
+                // If the desired node is found,
+                // break out of the first level children loop
+                // because there isn't a point in looping through
+                // all of them seeing as we already have our node
+                if(loopResult == 1)
+                    break;
+
+                // If the entire subtree was explored, continue onto the next one
+                if(loopResult == -1)
+                    continue;
+            }
+            // Default: end of branch as there are no children present and this node wasn't the desired one
+            else
+            {
+                loopResult = -1;
+            }
+        }
+    }
+    
+    // *desiredNode = currentNode;
+
+    return loopResult;  
+}
+int jsonTreeRemove(JSONTree **treePtrPtr, JSONTreeNode **nodePtrPtr)
+{
+    if(treePtrPtr == NULL || *treePtrPtr == NULL)
+        return -1;
+    
+    if(nodePtrPtr == NULL || *nodePtrPtr == NULL)
+        return -1;
+    
+    JSONTree *tree = *treePtrPtr;
+
+    int loopResult = 0;
+    do
+    {
+        loopResult = _jsonRemoveNodeLoop(&(tree->root), nodePtrPtr);
+    } while (loopResult == 0);
+    
+    if(loopResult == 1)
+    {
+        *nodePtrPtr = NULL;
+        return 1;
+    }
+    else
+        return 0;
 }
 
 /*
@@ -317,6 +425,8 @@ int jsonTreeGetNode(JSONTree **treePtrPtr, const char *const key, JSONTreeNode *
 
     JSONTreeNode *desiredNode = NULL;
 
+    // TODO: Generalize the tree traversal and decouple it from this func
+    //       so that it can be used for jsonTreeRemove as well
     // Recursively search through the entire tree until 
     // either the node is found or until the end of the tree is reached
     int loopResult = 0;

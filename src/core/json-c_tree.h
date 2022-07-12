@@ -28,12 +28,17 @@ IN THE SOFTWARE.
 //       to child nodes (if there are any), because Arrays and Objects are guaranteed 
 //       to have values that need to be looped for, whereas the other types do not
 
+// Struct that represents a singular node in a tree structure (JSONTree)
+// Contains info about the node (name (key) and a value that it should hold),
+// as well as linked list of child nodes
 typedef struct JSONTreeNode
 {
     JSONPair *info;
     JSONLinkedList *childNodes;
 } JSONTreeNode;
 
+// Struct representing a tree structure of branching nodes,
+// which all share a common parent (root node)
 typedef struct JSONTree
 {
     JSONTreeNode *root;
@@ -99,16 +104,17 @@ Returns:
 */
 int jsonTreeInsert(JSONTree **treePtrPtr, JSONTreeNode **nodePtrPtr, JSONTreeNode **parentNodePtrPtr);
 /*
-Removes the provided node
-
-If 'freeChildren' parameter is set, all of the node's children get removed as well
+Removes the provided node from the tree and frees it
 
 Returns:
+ 1 -- successfully removed node
+ 0 -- failed removing node, node not found
+-1 -- provided node ptr ptr or the ptr it's pointing to is null
 */
-int jsonTreeRemove(JSONTreeNode **nodePtrPtr, int freeChildren);
+int jsonTreeRemove(JSONTree **treePtrPtr, JSONTreeNode **nodePtrPtr);
 
 /*
-Traverses the tree in search for a node with the provided key.
+Traverses the tree and searches for a node with the provided key.
 ONLY WORKS FOR NON-ANONYMOUS NODES
 
 Returns:

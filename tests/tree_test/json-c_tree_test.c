@@ -42,6 +42,7 @@ void TestTreeNodeFree(CuTest *test);
 void TestTreeFree(CuTest *test);
 void TestTreeInsert(CuTest *test);
 void TestTreeGetNode(CuTest *test);
+void TestTreeRemove(CuTest *test);
 
 // Helper function for initiating the tree nodes to insert into the test tree
 // Required because nodes have to be reinitialized after every test due to freeing
@@ -92,6 +93,7 @@ int main()
     CuTest *testTreeFree = CuTestNew("Free tree", &TestTreeFree);
     CuTest *testTreeInsert = CuTestNew("Insert node into tree", &TestTreeInsert);
     CuTest *testTreeGetNode = CuTestNew("Get node of tree", &TestTreeGetNode);
+    CuTest *testTreeRemove = CuTestNew("Remove node from tree", &TestTreeRemove);
 
     // Add tests to suite
     CuSuiteAdd(suite, testTreeCreate);
@@ -100,6 +102,7 @@ int main()
     CuSuiteAdd(suite, testTreeFree);
     CuSuiteAdd(suite, testTreeInsert);
     CuSuiteAdd(suite, testTreeGetNode);
+    CuSuiteAdd(suite, testTreeRemove);
 
     // Run the suite and retrieve the results
     CuSuiteRun(suite);
@@ -228,7 +231,6 @@ void TestTreeInsert(CuTest *test)
     
     jsonTreeFree(&tree);
 }
-
 void TestTreeGetNode(CuTest *test)
 {
     /* Tree diagram:
@@ -270,4 +272,47 @@ void TestTreeGetNode(CuTest *test)
     CuAssertIntEquals(test, 0, (int)(nodeFive->info->value.value));
 
     jsonTreeFree(&tree);
+}
+void TestTreeRemove(CuTest *test)
+{
+    JSONTree *tree;
+    InitPopulatedTree(&tree);
+
+    // Retrieves the desired node in the tree for future use
+    JSONTreeNode *nodeThree;
+    jsonTreeGetNode(&tree, "node_three", &nodeThree);
+
+    // Unusable/undefined data checks
+    int funcResult = 0;
+    funcResult = jsonTreeRemove(NULL, &nodeThree);
+    CuAssertIntEquals(test, -1, funcResult);
+    funcResult = jsonTreeRemove(&tree, NULL);
+    CuAssertIntEquals(test, -1, funcResult);
+
+    // Check that the function reacts appropriately to attempting to remove a node not present in the tree
+    JSONTreeNode *nodeSeven;
+    jsonTreeCreateNode(&nodeSeven, "node_seven", (JSONValue){.type = JSON_VALUE_TYPE_BOOL, .value = "true"});
+    funcResult = jsonTreeRemove(&tree, &nodeSeven);
+    // Node was not found and wasn't removed, therefore 0 is expected
+    CuAssertIntEquals(test, 0, funcResult);
+    // As nothing was meant to be freed, the passed in pointer should not be freed by the function
+    CuAssertPtrNotNull(test, nodeSeven);
+    // Cleanup
+    jsonTreeFreeNode(&nodeSeven, 1);
+    
+    // Main check, ensure that the node actually gets removed
+    funcResult = jsonTreeRemove(&tree, &nodeThree);
+    // As desired node is present, 1 is expected because the function should remove the node
+    CuAssertIntEquals(test, 1, funcResult);
+    // Because the node is meant to be freed, NULL pointer is expected
+    CuAssertPtrEquals(test, NULL, nodeThree);
+    
+    // Check that the desired node was removed from the parent's list of child nodes
+    JSONTreeNode *firstNode = NULL;
+    jsonTreeGetNode(&tree, "node_one", &firstNode);
+    CuAssertIntEquals(test, 0, firstNode->childNodes->size);
+    CuAssertPtrEquals(test, NULL, firstNode->childNodes->start);
+    
+    // Peace of mind check ensuring that the parent node (node one) didn't somehow get freed in the process
+    CuAssertPtrNotNull(test, tree->root->childNodes->start);
 }
