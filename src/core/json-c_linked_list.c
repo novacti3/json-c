@@ -27,6 +27,7 @@ IN THE SOFTWARE.
 
 // TODO: Add if(listPtrPtr == NULL) return -1 to the start of every function
 //       to prevent dereferencing what could very well be a null pointer
+// TODO: REFACTOR 
 
 int jsonLinkedListCreate(JSONLinkedList **listPtrPtr)
 {
@@ -227,7 +228,88 @@ int jsonLinkedListInsert(JSONLinkedList** const listPtrPtr, int index, void* con
     
     return 1;    
 }
-int jsonLinkedListRemove(JSONLinkedList** const listPtrPtr, int index)
+/*
+Removes and frees the desired data from the list if it's present in the list
+Returns:
+ 1 -- node removed successfully
+ 0 -- failed removing node
+-1 -- provided list is uninitialized
+*/
+int jsonLinkedListRemove(JSONLinkedList** const listPtrPtr, void* const dataToRemove)
+{
+    if(listPtrPtr == NULL || *listPtrPtr == NULL)
+        return -1;
+    if(dataToRemove == NULL)
+        return -1;
+
+    JSONLinkedList *list = *listPtrPtr;
+
+    // The current node in the list
+    JSONLinkedListNode **currentNode = NULL;
+    // The node before the one that's to be freed
+    // Used to relink the whole list and keep it intact
+    JSONLinkedListNode **lastNode = NULL;
+    // Stores the node with the desired data
+    // so that it can be removed later
+    JSONLinkedListNode **desiredNode = NULL;
+
+    // Save the index at which the node is found so that it can be
+    // used later for determining where and how to relink the list
+    // after freeing the list node
+    int indexOfNode = 0;
+    // Loop through the list and look for data that should be removed
+    for (size_t i = 0; i <= list->size; i++)
+    {
+        // Break out of the loop if the desired node has been found
+        if(desiredNode != NULL)
+            break;
+
+        if(i == 0)
+        {
+            currentNode = &(list->start);
+            if((*currentNode)->data == dataToRemove)
+                desiredNode = currentNode;
+        }
+        else
+        {
+            lastNode = currentNode;
+            currentNode = &(*lastNode)->next;
+            if((*currentNode)->data == dataToRemove)
+                desiredNode = currentNode;
+        }
+
+        indexOfNode = i;
+    }
+
+    // Attempting to free a NULL ptr would lead to an error
+    if(desiredNode == 0 || *desiredNode == NULL)
+        return 0;
+    else
+    {
+        JSONLinkedListNode *nextNode = (*desiredNode)->next;
+        
+        // Free the desired data and the list node
+        free((*desiredNode)->data);
+        free((*desiredNode));
+
+        // Make sure to replace the start node with the next node
+        // if the index is 0
+        if(indexOfNode == 0)
+        {
+            list->start = nextNode;
+        }
+        // If it's not 0, make the node before the one that was just deleted
+        // point to the just deleted node's next node
+        else
+        {
+            (*lastNode)->next = nextNode;
+        }
+
+        list->size--;
+        return 1;
+    }    
+}
+int jsonLinkedListRemoveAt(JSONLinkedList** const listPtrPtr, int index)
 {
     JSONLinkedList *list = *listPtrPtr;
 
@@ -286,7 +368,6 @@ int jsonLinkedListRemove(JSONLinkedList** const listPtrPtr, int index)
             (*lastNode)->next = nextNode;
         }
 
-        
         list->size--;
         return 1;
     }

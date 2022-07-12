@@ -121,13 +121,21 @@ Returns:
 */
 int jsonLinkedListInsert(JSONLinkedList** const listPtrPtr, int index, void* const value);
 /*
+Removes and frees the desired data from the list if it's present in the list
+Returns:
+ 1 -- node removed successfully
+ 0 -- failed removing node
+-1 -- provided list is uninitialized
+*/
+int jsonLinkedListRemove(JSONLinkedList** const listPtrPtr, void* const data);
+/*
 Removes and frees the node at the desired index
 Returns:
  1 -- node removed successfully
  0 -- failed removing node
 -1 -- provided list is uninitialized
 */
-int jsonLinkedListRemove(JSONLinkedList** const listPtrPtr, int index);
+int jsonLinkedListRemoveAt(JSONLinkedList** const listPtrPtr, int index);
 
 /*
 Inserts a value to the front of the list

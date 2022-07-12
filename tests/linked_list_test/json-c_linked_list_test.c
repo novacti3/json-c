@@ -20,6 +20,7 @@ IN THE SOFTWARE.
 */
 
 // TODO: Add a comment for each CuAssert explaining what it is checking for
+// TODO: REFACTOR THESE and make sure that even the func result and invalid params get checked for
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,6 +48,7 @@ void TestListCreate(CuTest *test);
 
 void TestListInsert(CuTest *test);
 void TestListRemove(CuTest *test);
+void TestListRemoveAt(CuTest *test);
 
 void TestListAt(CuTest *test);
 void TestListContains(CuTest *test);
@@ -72,6 +74,7 @@ int main()
     
     CuTest *testListInsert = CuTestNew("Insert into list", &TestListInsert);
     CuTest *testListRemove = CuTestNew("Remove from list", &TestListRemove);
+    CuTest *testListRemoveAt = CuTestNew("Remove from list at index", &TestListRemoveAt);
     
     CuTest *testListAt = CuTestNew("Get element at index", &TestListAt);
     CuTest *testListContains = CuTestNew("List contains value", &TestListContains);
@@ -91,6 +94,7 @@ int main()
 
     CuSuiteAdd(suite, testListInsert);
     CuSuiteAdd(suite, testListRemove);
+    CuSuiteAdd(suite, testListRemoveAt);
 
     CuSuiteAdd(suite, testListAt);
     CuSuiteAdd(suite, testListContains);
@@ -189,7 +193,7 @@ void TestListRemove(CuTest *test)
     CuAssertIntEquals(test, 1, list->size);
     CuAssertPtrNotNull(test, list->start);
 
-    jsonLinkedListRemove(&list, 0);
+    jsonLinkedListRemove(&list, &VALUE_ONE);
     CuAssertIntEquals(test, 0, list->size);
     CuAssertPtrEquals(test, NULL, list->start);
 
@@ -200,7 +204,32 @@ void TestListRemove(CuTest *test)
     CuAssertPtrNotNull(test, list->start->next);
     CuAssertPtrEquals(test, NULL, list->start->next->next);
 
-    jsonLinkedListRemove(&list, 1);
+    jsonLinkedListRemove(&list, &VALUE_THREE);
+    CuAssertIntEquals(test, 1, list->size);
+    CuAssertPtrNotNull(test, list->start);
+    CuAssertPtrEquals(test, NULL, list->start->next);
+}
+void TestListRemoveAt(CuTest *test)
+{
+    CREATE_LIST(list);
+
+    // Insert several values to the list so that something can actually be removed
+    jsonLinkedListPushBack(&list, &VALUE_ONE);
+    CuAssertIntEquals(test, 1, list->size);
+    CuAssertPtrNotNull(test, list->start);
+
+    jsonLinkedListRemoveAt(&list, 0);
+    CuAssertIntEquals(test, 0, list->size);
+    CuAssertPtrEquals(test, NULL, list->start);
+
+    jsonLinkedListPushBack(&list, &VALUE_TWO);
+    jsonLinkedListPushBack(&list, &VALUE_THREE);
+    CuAssertIntEquals(test, 2, list->size);
+    CuAssertPtrNotNull(test, list->start);
+    CuAssertPtrNotNull(test, list->start->next);
+    CuAssertPtrEquals(test, NULL, list->start->next->next);
+
+    jsonLinkedListRemoveAt(&list, 1);
     CuAssertIntEquals(test, 1, list->size);
     CuAssertPtrNotNull(test, list->start);
     CuAssertPtrEquals(test, NULL, list->start->next);
