@@ -34,7 +34,6 @@ JSONLinkedList* x = NULL; \
 jsonLinkedListCreate(&x); \
 
 // Set of constants to test against in all test cases
-
 static int VALUE_ONE = 5;
 static int VALUE_TWO = -4;
 static int VALUE_THREE = 0;
@@ -45,6 +44,7 @@ static int VALUE_THREE = 0;
 // of each aspect of the linked lists
 
 void TestListCreate(CuTest *test);
+void TestListFree(CuTest *test);
 
 void TestListInsert(CuTest *test);
 void TestListRemove(CuTest *test);
@@ -61,8 +61,6 @@ void TestListPopBack(CuTest *test);
 
 void TestListToArray(CuTest *test);
 
-void TestListFree(CuTest *test);
-
 // MAIN FUNC
 int main()
 {
@@ -71,6 +69,7 @@ int main()
 
     // Create the tests
     CuTest *testListCreate = CuTestNew("Create list", &TestListCreate);
+    CuTest *testListFree = CuTestNew("Free List", &TestListFree);
     
     CuTest *testListInsert = CuTestNew("Insert into list", &TestListInsert);
     CuTest *testListRemove = CuTestNew("Remove from list", &TestListRemove);
@@ -87,10 +86,9 @@ int main()
     
     CuTest *testListToArray = CuTestNew("Convert list to array", &TestListToArray);
 
-    CuTest *testListFree = CuTestNew("Free List", &TestListFree);
-
     // Add tests to suite
     CuSuiteAdd(suite, testListCreate);
+    CuSuiteAdd(suite, testListFree);
 
     CuSuiteAdd(suite, testListInsert);
     CuSuiteAdd(suite, testListRemove);
@@ -106,8 +104,6 @@ int main()
     CuSuiteAdd(suite, testListPopBack);
 
     CuSuiteAdd(suite, testListToArray);
-
-    CuSuiteAdd(suite, testListFree);
 
     // Run the suite and retrieve the results
     CuSuiteRun(suite);
@@ -128,15 +124,63 @@ int main()
 
 void TestListCreate(CuTest *test)
 { 
-    JSONLinkedList *list = NULL;
-    
-    // NOTE: Checks for the fail results might be great too
+    JSONLinkedList *list;
+    int funcResult = 0;    
 
-    int createFuncResult = jsonLinkedListCreate(&list);
-    // Assert if list failed allocating
-    CuAssertIntEquals(test, 1, createFuncResult);
+    // Invalid input param check
+    funcResult = jsonLinkedListCreate(NULL);
+    CuAssertIntEquals(test, -1, funcResult);
+    
+    // Check if creation was successful
+    funcResult = jsonLinkedListCreate(&list);
+    CuAssertIntEquals(test, 1, funcResult);
     // Assert if the start of the list not empty
     CuAssertPtrEquals(test, NULL, list->start);
+}
+void TestListFree(CuTest *test)
+{
+    // Checks for invalid list ptr provided
+    JSONLinkedList *invalidList;
+    int funcResult = 0;
+    funcResult = jsonLinkedListFree(NULL, 0);
+    // No further checks for funcResult are required 
+    // as the func is guaranteed to succeed every time
+    CuAssertIntEquals(test, -1, funcResult);
+    
+    // Make sure that the func returns invalid param code
+    // if the pointed to ptr is NULL as well
+    invalidList = NULL;
+    funcResult = jsonLinkedListFree(&invalidList, 0);
+    CuAssertIntEquals(test, -1, funcResult);
+    
+    // Create list
+    JSONLinkedList *list;
+    jsonLinkedListCreate(&list);
+    // Ensure that the list ptr itself gets freed even if it has no nodes
+    jsonLinkedListFree(&list, 1);
+    CuAssertPtrEquals(test, NULL, list);
+
+    // Populate a newly created list
+    jsonLinkedListCreate(&list);
+    jsonLinkedListPushBack(&list, &VALUE_ONE);
+    jsonLinkedListPushBack(&list, &VALUE_TWO);
+    jsonLinkedListPushBack(&list, &VALUE_THREE);
+    // Make sure that if freeValues is 0, the values really don't get freed
+    jsonLinkedListFree(&list, 0);
+    CuAssertPtrEquals(test, NULL, list);
+
+    // Populate a newly created list
+    jsonLinkedListCreate(&list);
+    jsonLinkedListPushBack(&list, &VALUE_ONE);
+    jsonLinkedListPushBack(&list, &VALUE_TWO);
+    jsonLinkedListPushBack(&list, &VALUE_THREE);
+    // Ensure that everything proceeds when 'freeValues' is specified too
+    jsonLinkedListFree(&list, 1);
+    CuAssertPtrEquals(test, NULL, list);
+    // NOTE: Checking whether or not the data itself was actually freed
+    //       along with the nodes is not possible as jsonLinkedListPushBack
+    //       copies said data. By the time jsonLinkedListFree finishes,
+    //       everything is freed already
 }
 
 void TestListInsert(CuTest *test)
@@ -359,20 +403,4 @@ void TestListToArray(CuTest *test)
     CuAssertIntEquals(test, VALUE_ONE, values[0]);
     CuAssertIntEquals(test, VALUE_TWO, values[1]);
     CuAssertIntEquals(test, VALUE_THREE, values[2]);
-}
-
-void TestListFree(CuTest *test)
-{
-    JSONLinkedList *list = NULL;
-    jsonLinkedListCreate(&list);
-
-    jsonLinkedListPushBack(&list, &VALUE_ONE);
-    jsonLinkedListPushBack(&list, &VALUE_TWO);
-    jsonLinkedListPushBack(&list, &VALUE_THREE);
-
-    // NOTE: Asserts on whether or not the actual values were freed properly would be nice,
-    //       but implementing it has proven to be a challenge I do not have the time for right now
-    jsonLinkedListFree(&list, 1);
-
-    CuAssertPtrEquals(test, NULL, list);
 }

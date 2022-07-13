@@ -46,28 +46,25 @@ typedef struct JSONLinkedListNode
 /*
 Creates a new linked list
 
-If the provided list ptr is not NULL, 
-the function frees the currently present list 
-and replaces the old list with an empty one
-
-THE PASSED IN LIST PTR MUST BE SET TO NULL WHEN FIRST DECLARING THE LIST VAR
-like so:
-JSONLinkedList *list = NULL;
-jsonCreateLinkedList(&list);
+WARNING: 
+The function does NOT free the provided ptr if a list is already initiated
+Before calling jsonLinkedListCreate on a ptr that had been used for a list before,
+ensure that the list was freed using jsonLinkedListFree
 
 Returns: 
-1 -- successfully allocated a new empty list
-0 -- allocation was unsuccessful
+ 1 -- successfully allocated a new empty list
+ 0 -- allocation was unsuccessful
+-1 -- invalid list Ptr Ptr provided
 */
 int jsonLinkedListCreate(JSONLinkedList **listPtrPtr);
 /*
 Frees the provided list and all of its nodes
+This function is guaranteed to succeed if a valid list is provided
 
-If 'freeValues' parameter is set to 1, the values held by the list nodes will be freed as well
+If 'freeValues' parameter is set to 1, the data held by the list nodes will be freed as well
 
 Returns: 
  1 -- all nodes were freed correctly
- 0 -- some nodes were not freed
 -1 -- provided list is uninitialized
 */
 int jsonLinkedListFree(JSONLinkedList **listPtrPtr, int freeValues);

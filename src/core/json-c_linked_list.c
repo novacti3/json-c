@@ -25,17 +25,10 @@ IN THE SOFTWARE.
 // The max value must be specified as list->size - 1 (for clarity in code)
 #define IS_INDEX_OUT_OF_RANGE(i, max) (i < 0 || (i > max && i != 0))
 
-// TODO: Add if(listPtrPtr == NULL) return -1 to the start of every function
-//       to prevent dereferencing what could very well be a null pointer
-// TODO: REFACTOR 
-
 int jsonLinkedListCreate(JSONLinkedList **listPtrPtr)
 {
-    // Free the provided pointer to avoid memory leaks
-    // NOTE: Throws a segfault if a list ptr not set to NULL as default is passed in
-    //        While this is technically correct behaviour, it's absolutely shit from a usage perspective
-    if(*listPtrPtr != NULL)
-        jsonLinkedListFree(listPtrPtr, 1);
+    if(listPtrPtr == NULL)
+        return -1;
     
     JSONLinkedList *newList = (JSONLinkedList*)malloc(sizeof(JSONLinkedList));
     
@@ -50,55 +43,53 @@ int jsonLinkedListCreate(JSONLinkedList **listPtrPtr)
 }
 int jsonLinkedListFree(JSONLinkedList **listPtrPtr, int freeValues)
 {
-    JSONLinkedList *list = *listPtrPtr;
-    if(list == NULL)
+    if(listPtrPtr == NULL || *listPtrPtr == NULL)
         return -1;
-    // Trying to free nodes of an empty list leads to a segfault
-    if(list->size <= 0)
-        return 0;
+    
+    JSONLinkedList *list = *listPtrPtr;
 
-    // Stores the next node in the list so that it doesn't get lost
-    // once the current node gets freed
-    JSONLinkedListNode *nextNode = NULL;
-    for (size_t i = 0; i < list->size; i++)
+    // Trying to free nodes of an empty list leads to a segfault
+    if(list->start != NULL)
     {
-        // Holds the pointer to the current node of the list
-        JSONLinkedListNode *currentNode = NULL;
-        
-        // Ensures that the first iteration gets set to the 'start' pointer of JSONLinkedList
-        if(i == 0)
+        // Stores the next node in the list so that it doesn't get lost
+        // once the current node gets freed
+        JSONLinkedListNode *nextNode = NULL;
+        for (size_t i = 0; i < list->size; i++)
         {
-            currentNode = list->start; 
-            nextNode = currentNode->next;
+            // Holds the pointer to the current node of the list
+            JSONLinkedListNode *currentNode = NULL;
+            
+            // Ensures that the first iteration gets set to the 'start' pointer of JSONLinkedList
+            if(i == 0)
+            {
+                currentNode = list->start; 
+                nextNode = currentNode->next;
+            }
+            // Every other iteration should set the currentNode to the next node from the previous iteration
+            // and update the nextNode to be able to repeat this whole shebang in the next iteration 
+            else
+            {
+                currentNode = nextNode;
+                nextNode = currentNode->next;
+            }
+            
+            if(freeValues == 1) 
+            {
+                free(currentNode->data);
+                currentNode->data = NULL;
+            }
+            free(currentNode);
+            currentNode = NULL;
         }
-        // Every other iteration should set the currentNode to the next node from the previous iteration
-        // and update the nextNode to be able to repeat this whole shebang in the next iteration 
-        else
-        {
-            currentNode = nextNode;
-            nextNode = currentNode->next;
-        }
-        
-        if(freeValues == 1) 
-        {
-            free(currentNode->data);
-            currentNode->data = NULL;
-        }
-        free(currentNode);
-        currentNode = NULL;
     }
+    
     free(list);
     list = NULL;
 
-    if(list == NULL)
-    {
-        *listPtrPtr = list;
-        return 1;
-    }
-    else
-        return 0;
+    *listPtrPtr = list;
+    return 1;
 }
-
+// TODO: REFACTOR 
 int jsonLinkedListContains(JSONLinkedList** const listPtrPtr, void *value)
 {
     JSONLinkedList* const list = *listPtrPtr;
@@ -132,6 +123,7 @@ int jsonLinkedListContains(JSONLinkedList** const listPtrPtr, void *value)
     return 0;
 }
 
+// TODO: REFACTOR 
 int _jsonLinkedListAt(JSONLinkedList** const listPtrPtr, int index, void** outValue)
 {
     JSONLinkedList* const list = *listPtrPtr;
@@ -166,6 +158,7 @@ int _jsonLinkedListAt(JSONLinkedList** const listPtrPtr, int index, void** outVa
     else
         *outValue = (*desiredNode)->data;
 }
+// TODO: REFACTOR 
 int jsonLinkedListInsert(JSONLinkedList** const listPtrPtr, int index, void* const value)
 {
     JSONLinkedList *list = *listPtrPtr;
@@ -228,13 +221,7 @@ int jsonLinkedListInsert(JSONLinkedList** const listPtrPtr, int index, void* con
     
     return 1;    
 }
-/*
-Removes and frees the desired data from the list if it's present in the list
-Returns:
- 1 -- node removed successfully
- 0 -- failed removing node
--1 -- provided list is uninitialized
-*/
+// TODO: REFACTOR 
 int jsonLinkedListRemove(JSONLinkedList** const listPtrPtr, void* const dataToRemove)
 {
     if(listPtrPtr == NULL || *listPtrPtr == NULL)
@@ -309,6 +296,7 @@ int jsonLinkedListRemove(JSONLinkedList** const listPtrPtr, void* const dataToRe
         return 1;
     }    
 }
+// TODO: REFACTOR 
 int jsonLinkedListRemoveAt(JSONLinkedList** const listPtrPtr, int index)
 {
     JSONLinkedList *list = *listPtrPtr;
@@ -373,6 +361,7 @@ int jsonLinkedListRemoveAt(JSONLinkedList** const listPtrPtr, int index)
     }
 }
 
+// TODO: REFACTOR 
 int jsonLinkedListPushFront(JSONLinkedList** const listPtrPtr, void* const value)
 {
     JSONLinkedList *list = *listPtrPtr;
@@ -407,6 +396,7 @@ int jsonLinkedListPushFront(JSONLinkedList** const listPtrPtr, void* const value
     list->size++;
     return 1;    
 }
+// TODO: REFACTOR 
 int jsonLinkedListPopFront(JSONLinkedList **listPtrPtr)
 {
     JSONLinkedList *list = *listPtrPtr;
@@ -427,6 +417,7 @@ int jsonLinkedListPopFront(JSONLinkedList **listPtrPtr)
     return 1;
 }
 
+// TODO: REFACTOR 
 int jsonLinkedListPushBack(JSONLinkedList** const listPtrPtr, void* const value)
 {
     JSONLinkedList *list = *listPtrPtr;
@@ -471,6 +462,7 @@ int jsonLinkedListPushBack(JSONLinkedList** const listPtrPtr, void* const value)
     list->size++;
     return 1;    
 }
+// TODO: REFACTOR 
 int jsonLinkedListPopBack(JSONLinkedList** const listPtrPtr)
 {
     JSONLinkedList *list = *listPtrPtr;
@@ -500,6 +492,7 @@ int jsonLinkedListPopBack(JSONLinkedList** const listPtrPtr)
     return 1;    
 }
 
+// TODO: REFACTOR 
 int _jsonLinkedListToArray(JSONLinkedList** const listPtrPtr, void*** outArray)
 {
     JSONLinkedList *list = *listPtrPtr;
