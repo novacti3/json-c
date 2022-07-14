@@ -96,20 +96,24 @@ Returns:
 */
 int jsonLinkedListReplace(JSONLinkedList** const listPtrPtr, int index, void* const value);
 /*
-Removes and frees the desired data from the list if it's present in the list
+Searches for the desired data and removes it and frees it from the list if it's present
+
 Returns:
  1 -- node removed successfully
- 0 -- failed removing node
--1 -- provided list is uninitialized
+ 0 -- failed removing node, desired data not present in the list or the list is empty
+-1 -- provided list is uninitialized or the provided data to look for is NULL
 */
-int jsonLinkedListRemove(JSONLinkedList** const listPtrPtr, void* const data);
+// NOTE: Because the ptr is copied, there is no need for having an option for whether data should be freed or not
+int jsonLinkedListRemove(JSONLinkedList** const listPtrPtr, void* const dataToRemove);
 /*
 Removes and frees the node at the desired index
+
 Returns:
  1 -- node removed successfully
- 0 -- failed removing node
+ 0 -- failed removing node, index out of range or list is empty
 -1 -- provided list is uninitialized
 */
+// NOTE: Because the ptr is copied, there is no need for having an option for whether data should be freed or not
 int jsonLinkedListRemoveAt(JSONLinkedList** const listPtrPtr, int index);
 
 /*

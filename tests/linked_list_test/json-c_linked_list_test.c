@@ -273,49 +273,69 @@ void TestListReplace(CuTest *test)
 void TestListRemove(CuTest *test)
 {
     CREATE_LIST(list);
+    int funcResult = 0;
 
-    // Insert several values to the list so that something can actually be removed
-    jsonLinkedListPushBack(&list, &VALUE_ONE);
-    CuAssertIntEquals(test, 1, list->size);
-    CuAssertPtrNotNull(test, list->start);
+    // Invalid param checks
+    funcResult = jsonLinkedListRemove(NULL, &VALUE_ONE);
+    CuAssertIntEquals(test, -1, funcResult);
+    funcResult = jsonLinkedListRemove(&list, NULL);
+    CuAssertIntEquals(test, -1, funcResult);
+    
+    // Make sure that an empty list doesn't crash something
+    funcResult = jsonLinkedListRemove(&list, &VALUE_ONE);
+    CuAssertIntEquals(test, 0, funcResult);
 
-    jsonLinkedListRemove(&list, &VALUE_ONE);
+    // Insert a value to the list so that there is something to remove
+    jsonLinkedListInsert(&list, 0, &VALUE_ONE);
+    // Remove said value
+    funcResult = jsonLinkedListRemove(&list, &VALUE_ONE);
+    CuAssertIntEquals(test, 1, funcResult);
     CuAssertIntEquals(test, 0, list->size);
     CuAssertPtrEquals(test, NULL, list->start);
 
-    jsonLinkedListPushBack(&list, &VALUE_TWO);
-    jsonLinkedListPushBack(&list, &VALUE_THREE);
-    CuAssertIntEquals(test, 2, list->size);
-    CuAssertPtrNotNull(test, list->start);
-    CuAssertPtrNotNull(test, list->start->next);
-    CuAssertPtrEquals(test, NULL, list->start->next->next);
-
-    jsonLinkedListRemove(&list, &VALUE_THREE);
-    CuAssertIntEquals(test, 1, list->size);
-    CuAssertPtrNotNull(test, list->start);
-    CuAssertPtrEquals(test, NULL, list->start->next);
+    // Insert more stuff into the list
+    jsonLinkedListInsert(&list, 0, &VALUE_TWO);
+    jsonLinkedListInsert(&list, 1, &VALUE_THREE);
+    // See if searching for data not present in the list returns 0 as it should
+    funcResult = jsonLinkedListRemove(&list, &VALUE_ONE);
+    CuAssertIntEquals(test, 0, funcResult);
+    // Test if removing data in a list with more elements works fine
+    funcResult = jsonLinkedListRemove(&list, &VALUE_THREE);
+    CuAssertIntEquals(test, 1, funcResult);
 }
 void TestListRemoveAt(CuTest *test)
 {
     CREATE_LIST(list);
+    int funcResult = 0;
 
-    // Insert several values to the list so that something can actually be removed
-    jsonLinkedListPushBack(&list, &VALUE_ONE);
-    CuAssertIntEquals(test, 1, list->size);
-    CuAssertPtrNotNull(test, list->start);
+    // Invalid ptr check
+    funcResult = jsonLinkedListRemoveAt(NULL, 0);
+    CuAssertIntEquals(test, -1, funcResult);
+    // Can't remove something from an empty list check
+    funcResult = jsonLinkedListRemoveAt(&list, 0);
+    CuAssertIntEquals(test, 0, funcResult);
 
-    jsonLinkedListRemoveAt(&list, 0);
+    // Insert something into the list so that there is something to remove
+    jsonLinkedListInsert(&list, 0, &VALUE_ONE);
+    // Remove said thing
+    funcResult = jsonLinkedListRemoveAt(&list, 0);
+    CuAssertIntEquals(test, 1, funcResult);
     CuAssertIntEquals(test, 0, list->size);
     CuAssertPtrEquals(test, NULL, list->start);
 
-    jsonLinkedListPushBack(&list, &VALUE_TWO);
-    jsonLinkedListPushBack(&list, &VALUE_THREE);
-    CuAssertIntEquals(test, 2, list->size);
+    // Make sure that removal goes smoothly even in lists with more elements
+    jsonLinkedListInsert(&list, 0, &VALUE_TWO);
+    jsonLinkedListInsert(&list, 1, &VALUE_THREE);
+    funcResult = jsonLinkedListRemoveAt(&list, 1);
+    CuAssertIntEquals(test, 1, funcResult);
+    CuAssertIntEquals(test, 1, list->size);
     CuAssertPtrNotNull(test, list->start);
-    CuAssertPtrNotNull(test, list->start->next);
-    CuAssertPtrEquals(test, NULL, list->start->next->next);
+    CuAssertPtrEquals(test, NULL, list->start->next);
 
-    jsonLinkedListRemoveAt(&list, 1);
+    // Make sure that removing the start node works
+    jsonLinkedListInsert(&list, 1, &VALUE_THREE);
+    funcResult = jsonLinkedListRemoveAt(&list, 0);
+    CuAssertIntEquals(test, 1, funcResult);
     CuAssertIntEquals(test, 1, list->size);
     CuAssertPtrNotNull(test, list->start);
     CuAssertPtrEquals(test, NULL, list->start->next);
