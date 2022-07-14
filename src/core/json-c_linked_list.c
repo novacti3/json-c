@@ -90,77 +90,6 @@ int jsonLinkedListFree(JSONLinkedList **listPtrPtr, int freeValues)
     return 1;
 }
 
-int jsonLinkedListContains(JSONLinkedList** const listPtrPtr, void *value)
-{
-    if(listPtrPtr == NULL || *listPtrPtr == NULL)
-        return -1;
-    if(value == NULL)
-        return -1;
-
-    JSONLinkedList* const list = *listPtrPtr;
-    
-    if(list->size == 0)
-        return 0;
-
-    // No need to loop through the list if there's only one element in it
-    if(list->size == 1)
-        return list->start->data == value;
-    else
-    {
-        // Save the current node so that the value ptrs can be compared
-        JSONLinkedListNode **currentNode;
-        for (size_t i = 0; i <= list->size; i++)
-        {
-            if(i == 0)
-                currentNode = &(list->start);
-            else
-                currentNode = &((*currentNode)->next);
-
-            if(*currentNode == NULL) 
-                break; 
-            else
-                return (*currentNode)->data == value;
-        }
-    }
-
-    return 0;
-}
-
-// TODO: REFACTOR 
-int _jsonLinkedListAt(JSONLinkedList** const listPtrPtr, int index, void** outValue)
-{
-    JSONLinkedList* const list = *listPtrPtr;
-
-    if(list == NULL)
-        return -1;
-
-    if(IS_INDEX_OUT_OF_RANGE(index, list->size - 1))
-        return 0;
-
-    // Stores the node at the desired index in the list
-    // so that the specified value can be retrieved from it
-    JSONLinkedListNode** desiredNode = NULL;
-    
-    // Skip looping through the list if the index is 0
-    // because it's not necessarry seeing as 0 = start of list
-    if(index == 0)
-        desiredNode = &(list->start);
-    else
-    {
-        for (size_t i = 0; i <= index; i++)
-        {
-            if(i == 0)
-                desiredNode = &(list->start);
-            else
-                desiredNode = &(*desiredNode)->next;
-        }
-    }
-
-    if(*desiredNode == NULL)
-        return 0;
-    else
-        *outValue = (*desiredNode)->data;
-}
 // TODO: REFACTOR 
 int jsonLinkedListInsert(JSONLinkedList** const listPtrPtr, int index, void* const value)
 {
@@ -493,6 +422,78 @@ int jsonLinkedListPopBack(JSONLinkedList** const listPtrPtr)
     
     list->size--;
     return 1;    
+}
+
+int jsonLinkedListContains(JSONLinkedList** const listPtrPtr, void *value)
+{
+    if(listPtrPtr == NULL || *listPtrPtr == NULL)
+        return -1;
+    if(value == NULL)
+        return -1;
+
+    JSONLinkedList* const list = *listPtrPtr;
+    
+    if(list->size == 0)
+        return 0;
+
+    // No need to loop through the list if there's only one element in it
+    if(list->size == 1)
+        return list->start->data == value;
+    else
+    {
+        // Save the current node so that the value ptrs can be compared
+        JSONLinkedListNode **currentNode;
+        for (size_t i = 0; i <= list->size; i++)
+        {
+            if(i == 0)
+                currentNode = &(list->start);
+            else
+                currentNode = &((*currentNode)->next);
+
+            if(*currentNode == NULL) 
+                break; 
+            else
+                return (*currentNode)->data == value;
+        }
+    }
+
+    return 0;
+}
+
+// TODO: REFACTOR 
+int _jsonLinkedListAt(JSONLinkedList** const listPtrPtr, int index, void** outValue)
+{
+    JSONLinkedList* const list = *listPtrPtr;
+
+    if(list == NULL)
+        return -1;
+
+    if(IS_INDEX_OUT_OF_RANGE(index, list->size - 1))
+        return 0;
+
+    // Stores the node at the desired index in the list
+    // so that the specified value can be retrieved from it
+    JSONLinkedListNode** desiredNode = NULL;
+    
+    // Skip looping through the list if the index is 0
+    // because it's not necessarry seeing as 0 = start of list
+    if(index == 0)
+        desiredNode = &(list->start);
+    else
+    {
+        for (size_t i = 0; i <= index; i++)
+        {
+            if(i == 0)
+                desiredNode = &(list->start);
+            else
+                desiredNode = &(*desiredNode)->next;
+        }
+    }
+
+    if(*desiredNode == NULL)
+        return 0;
+    else
+        *outValue = (*desiredNode)->data;
 }
 
 // TODO: REFACTOR 

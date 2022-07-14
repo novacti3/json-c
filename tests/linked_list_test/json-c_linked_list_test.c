@@ -50,14 +50,15 @@ void TestListInsert(CuTest *test);
 void TestListRemove(CuTest *test);
 void TestListRemoveAt(CuTest *test);
 
-void TestListAt(CuTest *test);
-void TestListContains(CuTest *test);
-
 void TestListPushFront(CuTest *test);
 void TestListPopFront(CuTest *test);
 
 void TestListPushBack(CuTest *test);
 void TestListPopBack(CuTest *test);
+
+void TestListContains(CuTest *test);
+
+void TestListAt(CuTest *test);
 
 void TestListToArray(CuTest *test);
 
@@ -75,14 +76,15 @@ int main()
     CuTest *testListRemove = CuTestNew("Remove from list", &TestListRemove);
     CuTest *testListRemoveAt = CuTestNew("Remove from list at index", &TestListRemoveAt);
     
-    CuTest *testListAt = CuTestNew("Get element at index", &TestListAt);
-    CuTest *testListContains = CuTestNew("List contains value", &TestListContains);
-    
     CuTest *testListPushFront = CuTestNew("Push front", &TestListPushFront);
     CuTest *testListPopFront = CuTestNew("Pop front", &TestListPopFront);
 
     CuTest *testListPushBack = CuTestNew("Push back", &TestListPushBack);
     CuTest *testListPopBack = CuTestNew("Pop back", &TestListPopBack);
+    
+    CuTest *testListContains = CuTestNew("List contains value", &TestListContains);
+    
+    CuTest *testListAt = CuTestNew("Get element at index", &TestListAt);
     
     CuTest *testListToArray = CuTestNew("Convert list to array", &TestListToArray);
 
@@ -94,15 +96,16 @@ int main()
     CuSuiteAdd(suite, testListRemove);
     CuSuiteAdd(suite, testListRemoveAt);
 
-    CuSuiteAdd(suite, testListAt);
-    CuSuiteAdd(suite, testListContains);
-    
     CuSuiteAdd(suite, testListPushFront);
     CuSuiteAdd(suite, testListPopFront);
 
     CuSuiteAdd(suite, testListPushBack);
     CuSuiteAdd(suite, testListPopBack);
 
+    CuSuiteAdd(suite, testListContains);
+    
+    CuSuiteAdd(suite, testListAt);
+    
     CuSuiteAdd(suite, testListToArray);
 
     // Run the suite and retrieve the results
@@ -279,66 +282,6 @@ void TestListRemoveAt(CuTest *test)
     CuAssertPtrEquals(test, NULL, list->start->next);
 }
 
-void TestListAt(CuTest *test)
-{
-    CREATE_LIST(list);
-
-    // NOTE: Checks for the fail results might be great too
-
-    // Insert several values to the list so that something can actually be retrieved from it
-    jsonLinkedListPushBack(&list, &VALUE_ONE);
-    jsonLinkedListPushBack(&list, &VALUE_TWO);
-    jsonLinkedListPushBack(&list, &VALUE_THREE);
-
-    // Checks that all nodes got appended correctly
-    CuAssertIntEquals(test, 3, list->size);
-    CuAssertPtrEquals(test, NULL, list->start->next->next->next);
-
-    // Retrieve values
-    int val1, val2, val3;
-    jsonLinkedListAt(&list, 0, val1, int);
-    jsonLinkedListAt(&list, 1, val2, int);
-    jsonLinkedListAt(&list, 2, val3, int);
-    // Check that the value at the index is what was inserted
-    CuAssertIntEquals(test, VALUE_ONE, val1);
-    CuAssertIntEquals(test, VALUE_TWO, val2);
-    CuAssertIntEquals(test, VALUE_THREE, val3);
-
-    int funcResult1;
-    int* val1Ptr;
-    jsonLinkedListAtPtr(&list, 0, &funcResult1, val1Ptr, int*);
-    CuAssertPtrEquals(test, &VALUE_ONE, val1Ptr);
-}
-void TestListContains(CuTest *test)
-{
-    CREATE_LIST(list);
-    int funcResult = 0;
-
-    // Invalid param checks
-    funcResult = jsonLinkedListContains(NULL, &VALUE_ONE);
-    CuAssertIntEquals(test, -1, funcResult);
-    funcResult = jsonLinkedListContains(&list, NULL);
-    CuAssertIntEquals(test, -1, funcResult);
-
-    // Make sure that attempting to loop through an empty list returns 0
-    funcResult = jsonLinkedListContains(&list, &VALUE_ONE);
-    CuAssertIntEquals(test, 0, funcResult);
-
-    jsonLinkedListPushFront(&list, &VALUE_ONE);
-    // Check if the value is successfully found in a list of only 1 element
-    funcResult = jsonLinkedListContains(&list, &VALUE_ONE);
-    CuAssertIntEquals(test, 1, funcResult);
-
-    jsonLinkedListPushFront(&list, &VALUE_TWO);
-    // Check if value is found in a list of more elements
-    funcResult = jsonLinkedListContains(&list, &VALUE_TWO);
-    CuAssertIntEquals(test, 1, funcResult);
-    // Make sure that a value not present in the list
-    // returns the appropriate code
-    funcResult = jsonLinkedListContains(&list, &VALUE_THREE);
-    CuAssertIntEquals(test, 0, funcResult);
-}
-
 void TestListPushFront(CuTest *test)
 {
     CREATE_LIST(list);
@@ -398,6 +341,67 @@ void TestListPopBack(CuTest *test)
     jsonLinkedListPopBack(&list);
     CuAssertIntEquals(test, 2, list->size);
     CuAssertPtrEquals(test, NULL, list->start->next->next);
+}
+
+void TestListContains(CuTest *test)
+{
+    CREATE_LIST(list);
+    int funcResult = 0;
+
+    // Invalid param checks
+    funcResult = jsonLinkedListContains(NULL, &VALUE_ONE);
+    CuAssertIntEquals(test, -1, funcResult);
+    funcResult = jsonLinkedListContains(&list, NULL);
+    CuAssertIntEquals(test, -1, funcResult);
+
+    // Make sure that attempting to loop through an empty list returns 0
+    funcResult = jsonLinkedListContains(&list, &VALUE_ONE);
+    CuAssertIntEquals(test, 0, funcResult);
+
+    jsonLinkedListPushFront(&list, &VALUE_ONE);
+    // Check if the value is successfully found in a list of only 1 element
+    funcResult = jsonLinkedListContains(&list, &VALUE_ONE);
+    CuAssertIntEquals(test, 1, funcResult);
+
+    jsonLinkedListPushFront(&list, &VALUE_TWO);
+    // Check if value is found in a list of more elements
+    funcResult = jsonLinkedListContains(&list, &VALUE_TWO);
+    CuAssertIntEquals(test, 1, funcResult);
+    // Make sure that a value not present in the list
+    // returns the appropriate code
+    funcResult = jsonLinkedListContains(&list, &VALUE_THREE);
+    CuAssertIntEquals(test, 0, funcResult);
+}
+
+void TestListAt(CuTest *test)
+{
+    CREATE_LIST(list);
+
+    // NOTE: Checks for the fail results might be great too
+
+    // Insert several values to the list so that something can actually be retrieved from it
+    jsonLinkedListPushBack(&list, &VALUE_ONE);
+    jsonLinkedListPushBack(&list, &VALUE_TWO);
+    jsonLinkedListPushBack(&list, &VALUE_THREE);
+
+    // Checks that all nodes got appended correctly
+    CuAssertIntEquals(test, 3, list->size);
+    CuAssertPtrEquals(test, NULL, list->start->next->next->next);
+
+    // Retrieve values
+    int val1, val2, val3;
+    jsonLinkedListAt(&list, 0, val1, int);
+    jsonLinkedListAt(&list, 1, val2, int);
+    jsonLinkedListAt(&list, 2, val3, int);
+    // Check that the value at the index is what was inserted
+    CuAssertIntEquals(test, VALUE_ONE, val1);
+    CuAssertIntEquals(test, VALUE_TWO, val2);
+    CuAssertIntEquals(test, VALUE_THREE, val3);
+
+    int funcResult1;
+    int* val1Ptr;
+    jsonLinkedListAtPtr(&list, 0, &funcResult1, val1Ptr, int*);
+    CuAssertPtrEquals(test, &VALUE_ONE, val1Ptr);
 }
 
 void TestListToArray(CuTest *test)
