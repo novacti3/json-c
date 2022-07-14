@@ -189,47 +189,46 @@ void TestListFree(CuTest *test)
 void TestListInsert(CuTest *test)
 {
     CREATE_LIST(list);
+    int funcResult = 0;
 
-    // NOTE: Checks for the fail results might be great too
+    // Invalid param checks
+    funcResult = jsonLinkedListInsert(NULL, 0, &VALUE_ONE);
+    CuAssertIntEquals(test, -1, funcResult);
+    funcResult = jsonLinkedListInsert(&list, 0, NULL);
+    CuAssertIntEquals(test, -1, funcResult);
+
+    // Index out of range checks
+    funcResult = jsonLinkedListInsert(&list, -2, &VALUE_ONE);
+    CuAssertIntEquals(test, 0, funcResult);
+    funcResult = jsonLinkedListInsert(&list, 2, &VALUE_ONE);
+    CuAssertIntEquals(test, 0, funcResult);
 
     // Insert first value
-    jsonLinkedListInsert(&list, 0, &VALUE_ONE);
-    // Check if the size properly reflects the amount of nodes in the list
+    funcResult = jsonLinkedListInsert(&list, 0, &VALUE_ONE);
+    CuAssertIntEquals(test, 1, funcResult);
+    // Check that size properly reflects the amount of nodes in the list
     CuAssertIntEquals(test, 1, list->size);
-    // Check if the node got properly assigned as the start of the list
+    // Ensure that the new node got properly assigned as the start of the list
     CuAssertPtrNotNull(test, list->start);
-    
-    // Value check
-    int firstValue;
-    jsonLinkedListAt(&list, 0, firstValue, int);
-    // Check if the retrieved value corresponds to the value that was supposed to be inserted
-    CuAssertIntEquals(test, VALUE_ONE, firstValue);
+    // Check if the inserted value matches the one that was supposed to be inserted
+    CuAssertIntEquals(test, VALUE_ONE, *((int*)(list->start->data)));
 
-    // Attempt to insert second value
-    // This should fail because the index is more than the list's size - 1
-    jsonLinkedListInsert(&list, 1, &VALUE_TWO);
-    // Check if the size properly reflects the amount of nodes in the list
-    CuAssertIntEquals(test, 1, list->size);
-    CuAssertPtrEquals(test, NULL, list->start->next);
-    
-    // Push back the second value to the list so that it can be replaced later
-    jsonLinkedListPushBack(&list, &VALUE_TWO);
+    // Check that inserting an element to the next index in a list works fine
+    funcResult = jsonLinkedListInsert(&list, 1, &VALUE_TWO);
+    CuAssertIntEquals(test, 1, funcResult);
     CuAssertIntEquals(test, 2, list->size);
     CuAssertPtrNotNull(test, list->start->next);
 
     // Replace second value with other value
-    jsonLinkedListInsert(&list, 1, &VALUE_THREE);
+    funcResult = jsonLinkedListInsert(&list, 1, &VALUE_THREE);
+    CuAssertIntEquals(test, 1, funcResult);
     // Check that the size didn't change because no new node was supposed to be appended to the list
     CuAssertIntEquals(test, 2, list->size);
-    CuAssertPtrNotNull(test, list->start->next);
-    
-    // Value check
-    int thirdValue;
-    jsonLinkedListAt(&list, 1, thirdValue, int);
-    // Check that the retrieved value corresponds to the value that was supposed to replace the previous value
-    CuAssertIntEquals(test, VALUE_THREE, thirdValue);
-    // Check that no node was added to the list
     CuAssertPtrEquals(test, NULL, list->start->next->next);
+    // Make sure that the node itself wasn't freed rather than just the data
+    CuAssertPtrNotNull(test, list->start->next);
+    // Check that the retrieved value corresponds to the value that replaced the previous value
+    CuAssertIntEquals(test, VALUE_THREE, *((int*)(list->start->next->data)));
 }
 void TestListRemove(CuTest *test)
 {

@@ -71,10 +71,18 @@ int jsonLinkedListFree(JSONLinkedList **listPtrPtr, int freeValues);
 
 /*
 Inserts the specified value into a node at the desired index
+Index must be greater than 0 and less than the list's current size + 1
+eg. indexes valid for a list with the size of 1: 0, 1
+
+WARNING:
+If data is already present at the given index, the old data is freed
+in favor of the new data. If you don't want that to happen,
+use the 'jsonLinkedListReplace' function, which doesn't free the old data
+and even returns the pointer to them back to you
 
 Returns:
  1 -- value inserted successfully
- 0 -- failed inserting value
+ 0 -- failed inserting value or index was out of range
 -1 -- provided list is uninitialized
 */
 int jsonLinkedListInsert(JSONLinkedList** const listPtrPtr, int index, void* const value);

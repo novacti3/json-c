@@ -90,15 +90,18 @@ int jsonLinkedListFree(JSONLinkedList **listPtrPtr, int freeValues)
     return 1;
 }
 
-// TODO: REFACTOR 
 int jsonLinkedListInsert(JSONLinkedList** const listPtrPtr, int index, void* const value)
 {
-    JSONLinkedList *list = *listPtrPtr;
-
-    if(list == NULL)
+    if(listPtrPtr == NULL || *listPtrPtr == NULL)
+        return -1;
+    if(value == NULL)
         return -1;
 
-    if(IS_INDEX_OUT_OF_RANGE(index, list->size - 1))
+    JSONLinkedList *list = *listPtrPtr;
+
+    // The function should be able to insert an element right after the last valid one,
+    // hence the extra condition
+    if(IS_INDEX_OUT_OF_RANGE(index, list->size - 1) && index != list->size)
         return 0;
 
     // Stores the node at the desired index in the list
@@ -111,20 +114,44 @@ int jsonLinkedListInsert(JSONLinkedList** const listPtrPtr, int index, void* con
         desiredNode = &(list->start);
     else
     {
-        for (size_t i = 0; i <= index; i++)
+        // Because the function can insert data after the last valid index
+        // it is necessary to ensure that an index with an as of yet empty node
+        // doesn't get accessed and isn't attempted to be used, which could cause a segfault
+        if(index < list->size)
         {
-            if(i == 0)
-                desiredNode = &(list->start);
-            else
-                desiredNode = &(*desiredNode)->next;
+            // i can be equal to index as well because it's under the list's size
+            // and is therefore guaranteed to have a node present
+            for (size_t i = 0; i <= index; i++)
+            {
+                if(i == 0)
+                    desiredNode = &(list->start);
+                else
+                    desiredNode = &(*desiredNode)->next;
+            }
+        }
+        else
+        {
+            // i can't be equal to index because it's the list's size
+            // and the node for said index is not initialized yet, therefore
+            // the last initialized node must be accessed so that
+            // a new node to be appended to it
+            for (size_t i = 0; i < index; i++)
+            {
+                if(i == 0)
+                    desiredNode = &(list->start);
+                else
+                    desiredNode = &(*desiredNode)->next;
+            }
         }
     }
 
-    // Just replace the value of the node if a JSONLinkedListNode
+    // Free and replace the value of the node if a JSONLinkedListNode
     // is already present at the given index
-    if(*desiredNode != NULL)
+    // Extra condition required so that the next node of the last valid node
+    // isn't attempted to be dereferenced before being initialized
+    if(*desiredNode != NULL && index != list->size)
     {
-        // NOTE: Could not freeing the value here lead to a mem leak?
+        free((*desiredNode)->data);
         (*desiredNode)->data = value;
     }   
     // Otherwise create a new JSONLinkedListNode
@@ -140,7 +167,7 @@ int jsonLinkedListInsert(JSONLinkedList** const listPtrPtr, int index, void* con
         newNode->data = value;
         newNode->next = NULL;
 
-        // The start ptr is always NULL, so this check is needed to ensure 
+        // The start ptr is always NULL on list create, so this check is needed to ensure 
         // that the new node gets set as the new start pointer properly
         if(*desiredNode == NULL)
             *desiredNode = newNode;
@@ -149,7 +176,6 @@ int jsonLinkedListInsert(JSONLinkedList** const listPtrPtr, int index, void* con
         
         list->size++;
     } 
-
     
     return 1;    
 }
