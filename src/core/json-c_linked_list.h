@@ -71,9 +71,10 @@ int jsonLinkedListFree(JSONLinkedList **listPtrPtr, int freeValues);
 
 /*
 Checks whether some node in the provided list contains the desired value
+
 Returns: 
  1 -- value was found
- 0 -- value was NOT found
+ 0 -- value was not found
 -1 -- provided list is uninitialized
 */
 int jsonLinkedListContains(JSONLinkedList** const listPtrPtr, void *value);

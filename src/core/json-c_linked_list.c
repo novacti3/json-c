@@ -89,13 +89,16 @@ int jsonLinkedListFree(JSONLinkedList **listPtrPtr, int freeValues)
     *listPtrPtr = list;
     return 1;
 }
-// TODO: REFACTOR 
+
 int jsonLinkedListContains(JSONLinkedList** const listPtrPtr, void *value)
 {
-    JSONLinkedList* const list = *listPtrPtr;
-    if(list == NULL)
+    if(listPtrPtr == NULL || *listPtrPtr == NULL)
+        return -1;
+    if(value == NULL)
         return -1;
 
+    JSONLinkedList* const list = *listPtrPtr;
+    
     if(list->size == 0)
         return 0;
 

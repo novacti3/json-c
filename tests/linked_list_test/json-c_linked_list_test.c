@@ -312,13 +312,31 @@ void TestListAt(CuTest *test)
 void TestListContains(CuTest *test)
 {
     CREATE_LIST(list);
+    int funcResult = 0;
+
+    // Invalid param checks
+    funcResult = jsonLinkedListContains(NULL, &VALUE_ONE);
+    CuAssertIntEquals(test, -1, funcResult);
+    funcResult = jsonLinkedListContains(&list, NULL);
+    CuAssertIntEquals(test, -1, funcResult);
+
+    // Make sure that attempting to loop through an empty list returns 0
+    funcResult = jsonLinkedListContains(&list, &VALUE_ONE);
+    CuAssertIntEquals(test, 0, funcResult);
 
     jsonLinkedListPushFront(&list, &VALUE_ONE);
-    CuAssertIntEquals(test, 1, jsonLinkedListContains(&list, &VALUE_ONE));
+    // Check if the value is successfully found in a list of only 1 element
+    funcResult = jsonLinkedListContains(&list, &VALUE_ONE);
+    CuAssertIntEquals(test, 1, funcResult);
 
     jsonLinkedListPushFront(&list, &VALUE_TWO);
-    CuAssertIntEquals(test, 1, jsonLinkedListContains(&list, &VALUE_TWO));
-    CuAssertIntEquals(test, 0, jsonLinkedListContains(&list, &VALUE_THREE));
+    // Check if value is found in a list of more elements
+    funcResult = jsonLinkedListContains(&list, &VALUE_TWO);
+    CuAssertIntEquals(test, 1, funcResult);
+    // Make sure that a value not present in the list
+    // returns the appropriate code
+    funcResult = jsonLinkedListContains(&list, &VALUE_THREE);
+    CuAssertIntEquals(test, 0, funcResult);
 }
 
 void TestListPushFront(CuTest *test)
