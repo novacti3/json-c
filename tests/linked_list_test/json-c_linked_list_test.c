@@ -47,6 +47,7 @@ void TestListCreate(CuTest *test);
 void TestListFree(CuTest *test);
 
 void TestListInsert(CuTest *test);
+void TestListReplace(CuTest *test);
 void TestListRemove(CuTest *test);
 void TestListRemoveAt(CuTest *test);
 
@@ -73,6 +74,7 @@ int main()
     CuTest *testListFree = CuTestNew("Free List", &TestListFree);
     
     CuTest *testListInsert = CuTestNew("Insert into list", &TestListInsert);
+    CuTest *testListReplace = CuTestNew("Replace element in list", &TestListReplace);
     CuTest *testListRemove = CuTestNew("Remove from list", &TestListRemove);
     CuTest *testListRemoveAt = CuTestNew("Remove from list at index", &TestListRemoveAt);
     
@@ -93,6 +95,7 @@ int main()
     CuSuiteAdd(suite, testListFree);
 
     CuSuiteAdd(suite, testListInsert);
+    CuSuiteAdd(suite, testListReplace);
     CuSuiteAdd(suite, testListRemove);
     CuSuiteAdd(suite, testListRemoveAt);
 
@@ -229,6 +232,43 @@ void TestListInsert(CuTest *test)
     CuAssertPtrNotNull(test, list->start->next);
     // Check that the retrieved value corresponds to the value that replaced the previous value
     CuAssertIntEquals(test, VALUE_THREE, *((int*)(list->start->next->data)));
+}
+void TestListReplace(CuTest *test)
+{
+    CREATE_LIST(list);
+    int funcResult = 0;
+
+    // Invalid param checks
+    funcResult = jsonLinkedListReplace(NULL, 0, &VALUE_ONE);
+    CuAssertIntEquals(test, -1, funcResult);
+    funcResult = jsonLinkedListReplace(&list, 0, NULL);
+    CuAssertIntEquals(test, -1, funcResult);
+
+    // Index out of range checks
+    funcResult = jsonLinkedListReplace(&list, -2, &VALUE_ONE);
+    CuAssertIntEquals(test, 0, funcResult);
+    funcResult = jsonLinkedListReplace(&list, 2, &VALUE_ONE);
+    CuAssertIntEquals(test, 0, funcResult);
+
+    // Make sure that replacing the start node before it was initialized
+    // doesn't proceed as that could lead to a segfault
+    funcResult = jsonLinkedListReplace(&list, 0, &VALUE_ONE);
+    CuAssertIntEquals(test, 0, funcResult);
+
+    // Insert first value
+    jsonLinkedListInsert(&list, 0, &VALUE_ONE);
+    // Replace the start node
+    funcResult = jsonLinkedListReplace(&list, 0, &VALUE_TWO);
+    CuAssertIntEquals(test, 1, funcResult);
+    CuAssertIntEquals(test, VALUE_TWO, *((int*)(list->start->data)));
+
+    // Insert another value
+    jsonLinkedListInsert(&list, 1, &VALUE_THREE);
+    // Replace the new value with a different one
+    funcResult = jsonLinkedListReplace(&list, 1, &VALUE_TWO);
+    CuAssertIntEquals(test, 1, funcResult);
+    CuAssertIntEquals(test, VALUE_TWO, *((int*)(list->start->next->data)));
+
 }
 void TestListRemove(CuTest *test)
 {

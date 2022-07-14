@@ -179,6 +179,48 @@ int jsonLinkedListInsert(JSONLinkedList** const listPtrPtr, int index, void* con
     
     return 1;    
 }
+int jsonLinkedListReplace(JSONLinkedList** const listPtrPtr, int index, void* const value)
+{
+    if(listPtrPtr == NULL || *listPtrPtr == NULL)
+        return -1;
+    if(value == NULL)
+        return -1;
+
+    JSONLinkedList *list = *listPtrPtr;
+
+    if(IS_INDEX_OUT_OF_RANGE(index, list->size - 1))
+        return 0;
+
+    // Stores the node at the desired index in the list
+    // so that its data can be replaced
+    JSONLinkedListNode **desiredNode = NULL;
+    
+    // Skip looping through the list if the index is 0
+    // because it's not necessarry seeing as 0 = start of list
+    if(index == 0)
+        desiredNode = &(list->start);
+    else
+    {
+        for (size_t i = 0; i <= index; i++)
+        {
+            if(i == 0)
+                desiredNode = &(list->start);
+            else
+                desiredNode = &(*desiredNode)->next;
+        }
+    }
+
+    // Replace the value of the node of the node
+    // if it has been initialized already
+    if(*desiredNode != NULL)
+    {
+        (*desiredNode)->data = value;
+    }
+    else
+        return 0;
+    
+    return 1;
+}
 // TODO: REFACTOR 
 int jsonLinkedListRemove(JSONLinkedList** const listPtrPtr, void* const dataToRemove)
 {

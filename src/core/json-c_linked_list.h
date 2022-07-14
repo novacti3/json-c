@@ -78,14 +78,23 @@ WARNING:
 If data is already present at the given index, the old data is freed
 in favor of the new data. If you don't want that to happen,
 use the 'jsonLinkedListReplace' function, which doesn't free the old data
-and even returns the pointer to them back to you
 
 Returns:
  1 -- value inserted successfully
  0 -- failed inserting value or index was out of range
--1 -- provided list is uninitialized
+-1 -- provided list is uninitialized or the provided value is NULL
 */
 int jsonLinkedListInsert(JSONLinkedList** const listPtrPtr, int index, void* const value);
+/*
+Replaces the data at the provided index with new data
+The old data isn't freed, therefore it is safe to use even after calling this function
+
+Returns:
+ 1 -- data replaced successfully
+ 0 -- failed replacing data, index out of range
+-1 -- provided list is uninitialized or the provided value is NULL
+*/
+int jsonLinkedListReplace(JSONLinkedList** const listPtrPtr, int index, void* const value);
 /*
 Removes and frees the desired data from the list if it's present in the list
 Returns:
