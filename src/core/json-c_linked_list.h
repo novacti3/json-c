@@ -71,6 +71,7 @@ int jsonLinkedListFree(JSONLinkedList **listPtrPtr, int freeValues);
 
 /*
 Inserts the specified value into a node at the desired index
+
 Returns:
  1 -- value inserted successfully
  0 -- failed inserting value
@@ -136,7 +137,7 @@ Returns:
  0 -- value was not found
 -1 -- provided list is uninitialized
 */
-int jsonLinkedListContains(JSONLinkedList** const listPtrPtr, void *value);
+int jsonLinkedListContains(JSONLinkedList** const listPtrPtr, void* const value);
 
 int _jsonLinkedListAt(JSONLinkedList** const listPtrPtr, int index, void** outValue);
 /*

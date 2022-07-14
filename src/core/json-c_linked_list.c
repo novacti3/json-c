@@ -424,7 +424,7 @@ int jsonLinkedListPopBack(JSONLinkedList** const listPtrPtr)
     return 1;    
 }
 
-int jsonLinkedListContains(JSONLinkedList** const listPtrPtr, void *value)
+int jsonLinkedListContains(JSONLinkedList** const listPtrPtr, void* const value)
 {
     if(listPtrPtr == NULL || *listPtrPtr == NULL)
         return -1;
